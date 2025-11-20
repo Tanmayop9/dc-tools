@@ -1,0 +1,51 @@
+{
+  "general": {
+    "max_retries": 3,
+    "retry_delay": 5,
+    "rate_limit_delay": 30,
+    "verify_tokens": true,
+    "warm_accounts": false
+  },
+  "proxy": {
+    "enabled": false,
+    "proxy_list_file": "proxies.txt",
+    "proxy_type": "http",
+    "rotate_proxies": true
+  },
+  "captcha": {
+    "enabled": true,
+    "solver": "manual",
+    "api_key": "",
+    "fallback_solver": "manual",
+    "manual_timeout": 300
+  },
+  "email": {
+    "primary_service": "1secmail",
+    "fallback_services": ["tempmail", "guerrillamail"],
+    "verification_timeout": 300,
+    "check_interval": 10
+  },
+  "profile": {
+    "customize_profile": false,
+    "upload_avatar": false,
+    "avatar_folder": "avatars/",
+    "set_bio": false,
+    "bio_templates": [
+      "Just a gamer",
+      "Here to chat",
+      "Gaming enthusiast"
+    ]
+  },
+  "auto_join": {
+    "enabled": false,
+    "server_invites": []
+  },
+  "advanced": {
+    "fingerprint_spoofing": true,
+    "user_agent_rotation": true,
+    "multi_threading": false,
+    "max_threads": 3,
+    "use_database": false,
+    "database_file": "accounts.db"
+  }
+}

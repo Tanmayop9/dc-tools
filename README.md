@@ -6,8 +6,49 @@ Discord Account Creator - For Educational Purposes Only
 
 This tool is provided for **educational purposes only**. Creating multiple Discord accounts or automating account creation may violate Discord's Terms of Service. Use at your own risk. The authors are not responsible for any misuse of this tool.
 
+## 🎯 Recommended for Termux Users
+
+**Use `discord_creator_free.py` for 100% FREE manual CAPTCHA solving!**
+- No paid services needed
+- Browser opens automatically for CAPTCHA
+- Just solve CAPTCHA when prompted (takes 10-30 seconds)
+- Everything else is fully automatic
+- See [TERMUX_SETUP.md](TERMUX_SETUP.md) for complete guide
+
+## 🎯 Three Versions Available
+
+### 🆓 FREE Version (`discord_creator_free.py`) ⭐ RECOMMENDED FOR TERMUX
+**100% FREE - No paid services!**
+- Manual CAPTCHA solving via browser
+- Browser opens automatically on Termux
+- Just solve CAPTCHA when prompted
+- Perfect for Termux users
+- See [TERMUX_SETUP.md](TERMUX_SETUP.md)
+
+### Basic Version (`discord_creator.py`)
+Simple and straightforward account creation
+- No CAPTCHA support
+- May fail if CAPTCHA required
+
+### Ultra Advanced Version (`discord_creator_advanced.py`)
+Professional-grade automation with advanced features
+- Supports paid CAPTCHA solvers OR free manual solving
+- Proxy support, multi-threading, database, etc.
+
 ## Features
 
+### 🆓 FREE Version Features (BEST FOR TERMUX)
+- ✅ **100% FREE** - No paid services required
+- ✅ **Manual CAPTCHA Solving** - Browser opens automatically
+- ✅ **Termux Optimized** - Uses termux-open-url
+- ✅ **Fully Automatic** - Except for solving CAPTCHA
+- ✅ Email verification using free temporary email
+- ✅ Token extraction and storage
+- ✅ Beautiful colored terminal output
+- ✅ Multiple account creation support
+- ✅ Easy to use - just solve CAPTCHA when browser opens
+
+### Basic Version
 - ✅ Fully automatic Discord account creation
 - ✅ Email verification using free temporary email service (1secmail)
 - ✅ Token extraction and storage
@@ -15,6 +56,23 @@ This tool is provided for **educational purposes only**. Creating multiple Disco
 - ✅ No GUI dependencies
 - ✅ Multiple account creation support
 - ✅ Saves account details and tokens
+- ⚠️ No CAPTCHA support (may fail)
+
+### Ultra Advanced Version Features 🚀
+- ✅ **Multi-Provider Email Support** (1secmail, TempMail, GuerrillaMail)
+- ✅ **CAPTCHA Solving** (2captcha, Anti-Captcha integration)
+- ✅ **Proxy Support** (HTTP/HTTPS/SOCKS5 with rotation)
+- ✅ **Advanced Fingerprinting** (Anti-detection measures)
+- ✅ **User Agent Rotation** (Multiple realistic agents)
+- ✅ **Smart Retry Mechanism** (Exponential backoff)
+- ✅ **Profile Customization** (Bio, avatar support)
+- ✅ **Token Validation** (Real-time verification)
+- ✅ **Database Integration** (SQLite for account management)
+- ✅ **Multi-Threading** (Parallel account creation)
+- ✅ **Auto Server Joining** (Join Discord servers automatically)
+- ✅ **Rich Terminal Output** (Colored, professional display)
+- ✅ **Configuration File** (JSON-based settings)
+- ✅ **Account Manager** (Dedicated management tool)
 
 ## Requirements
 
@@ -56,16 +114,31 @@ pip3 install -r requirements.txt
 
 ## Usage
 
+### 🆓 FREE Version (RECOMMENDED FOR TERMUX) ⭐
+
 ```bash
-# Run the account creator
-python discord_creator.py
+# Run the FREE version with manual CAPTCHA solving
+python discord_creator_free.py
 ```
 
-Or make it executable:
+**What happens:**
+1. Script generates random credentials
+2. Gets temporary email automatically
+3. Registers Discord account
+4. **If CAPTCHA required**: Browser opens automatically
+5. You solve CAPTCHA in browser (10-30 seconds)
+6. Click submit button
+7. Script continues automatically
+8. Email verification happens
+9. Token saved to `tokens.txt`
+
+**Perfect for Termux!** See complete guide: [TERMUX_SETUP.md](TERMUX_SETUP.md)
+
+### Basic Version
 
 ```bash
-chmod +x discord_creator.py
-./discord_creator.py
+# Run the basic account creator (no CAPTCHA support)
+python discord_creator.py
 ```
 
 The script will:
@@ -77,18 +150,88 @@ The script will:
 6. Save the token to `tokens.txt`
 7. Save full account details to `accounts.txt`
 
+⚠️ May fail if CAPTCHA is required
+
+### Ultra Advanced Version 🚀
+
+```bash
+# First, configure settings (optional)
+nano config.json
+
+# Run the advanced creator
+python discord_creator_advanced.py
+```
+
+**Advanced Features Setup:**
+
+1. **Configure Proxies** (Optional but recommended)
+```bash
+# Create proxy list
+cp proxies.txt.example proxies.txt
+nano proxies.txt  # Add your proxies
+
+# Enable in config.json
+# Set "proxy": {"enabled": true}
+```
+
+2. **Setup CAPTCHA Solver** (Optional)
+```bash
+# Get API key from 2captcha.com or anti-captcha.com
+# Add to config.json:
+# "captcha": {"enabled": true, "api_key": "YOUR_KEY"}
+```
+
+3. **Enable Advanced Features**
+```bash
+# Edit config.json to enable:
+# - Multi-threading
+# - Database storage
+# - Profile customization
+# - Auto server joining
+```
+
+### Account Manager Tool
+
+```bash
+# Manage your created accounts
+python account_manager.py
+```
+
+Features:
+- List all accounts
+- Validate tokens
+- Export to various formats
+- View statistics
+- Delete invalid accounts
+
 ## Output Files
 
 - **tokens.txt** - Contains only the tokens (one per line)
 - **accounts.txt** - Contains full account details (email, username, password, token)
 
+## 📖 Documentation
+
+- **[ADVANCED_FEATURES.md](ADVANCED_FEATURES.md)** - Complete guide to advanced features
+- **[config.json](config.json)** - Configuration file with all options
+- **[example_output.txt](example_output.txt)** - Example of what to expect
+
 ## Notes
 
-- The script uses a free temporary email service (1secmail.com)
+### Basic Version
+- Uses free temporary email service (1secmail.com)
 - Email verification may take up to 5 minutes
-- Some accounts may require manual verification if automatic verification fails
-- Rate limiting: The script waits 30 seconds between creating multiple accounts
+- Some accounts may require manual verification
+- Rate limiting: 30 seconds between accounts
 - Works completely in terminal (no GUI required)
+
+### Advanced Version
+- Supports multiple email providers with automatic fallback
+- CAPTCHA solving increases success rate (requires paid API)
+- Proxy support prevents IP bans (highly recommended for bulk creation)
+- Multi-threading speeds up bulk creation
+- Database enables better account management
+- Configurable delays and retry mechanisms
+- See [ADVANCED_FEATURES.md](ADVANCED_FEATURES.md) for full documentation
 
 ## Troubleshooting
 

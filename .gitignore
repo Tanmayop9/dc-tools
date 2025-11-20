@@ -1,6 +1,11 @@
 # Account data - DO NOT COMMIT
 tokens.txt
 accounts.txt
+accounts.db
+exported_tokens.txt
+accounts_export.json
+proxies.txt
+config_custom.json
 
 # Python
 __pycache__/

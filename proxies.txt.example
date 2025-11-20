@@ -1,0 +1,14 @@
+# Example proxy list
+# Format: IP:PORT or IP:PORT:USERNAME:PASSWORD
+# One proxy per line
+
+# HTTP/HTTPS Proxies
+# 123.123.123.123:8080
+# 124.124.124.124:3128
+
+# SOCKS5 Proxies (configure proxy_type in config.json)
+# socks5://125.125.125.125:1080
+# socks5://126.126.126.126:1080
+
+# Authenticated proxies
+# 127.127.127.127:8080:username:password
