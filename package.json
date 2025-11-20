@@ -1,0 +1,20 @@
+{
+  "name": "dc-tools",
+  "version": "1.0.0",
+  "description": "Discord tools for educational and research purposes",
+  "main": "vc-stay-online.js",
+  "type": "module",
+  "scripts": {
+    "start": "node vc-stay-online.js"
+  },
+  "keywords": ["discord", "voice", "bot"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js-selfbot-v13": "^3.1.3",
+    "@discordjs/voice": "^0.16.1",
+    "libsodium-wrappers": "^0.7.13",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
+  }
+}
