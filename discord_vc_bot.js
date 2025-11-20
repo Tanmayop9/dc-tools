@@ -19,24 +19,12 @@ import {
   entersState
 } from '@discordjs/voice';
 import express from 'express';
-import { config } from 'dotenv';
 
-// Load environment variables
-config();
-
-// Validate required environment variables
-const requiredEnvVars = ['DISCORD_TOKEN', 'GUILD_ID', 'CHANNEL_ID'];
-for (const varName of requiredEnvVars) {
-  if (!process.env[varName]) {
-    console.error(`❌ Missing required environment variable: ${varName}`);
-    console.error('Please copy .env.example to .env and fill in your values.');
-    process.exit(1);
-  }
-}
-
-const TOKEN = process.env.DISCORD_TOKEN;
-const GUILD_ID = process.env.GUILD_ID;
-const CHANNEL_ID = process.env.CHANNEL_ID;
+// Hardcoded configuration - Replace with your actual values
+// ⚠️ WARNING: Never commit real tokens to version control in production
+const TOKEN = "YOUR_DISCORD_TOKEN_HERE";
+const GUILD_ID = "YOUR_GUILD_ID_HERE";
+const CHANNEL_ID = "YOUR_CHANNEL_ID_HERE";
 const WEB_PORT = 3000;
 
 // Configuration for natural behavior
@@ -462,8 +450,8 @@ class VoiceChannelBot {
         process.exit(1);
       }
 
-      if (channel.type !== 2) { // 2 = GUILD_VOICE
-        console.error('❌ Channel is not a voice channel.');
+      if (channel.type !== 2 && channel.type !== 13) { // 2 = GUILD_VOICE, 13 = GUILD_STAGE_VOICE
+        console.error('❌ Channel is not a voice or stage voice channel.');
         this.stats.status = 'Invalid channel type';
         process.exit(1);
       }
