@@ -2,6 +2,13 @@
 
 Discord Account Creator - For Educational Purposes Only
 
+## 📚 Documentation
+
+- 🚀 **[Quick Start Guide](QUICKSTART.md)** - Get your first account in 5 minutes!
+- 📱 **[Termux Setup Guide](TERMUX_SETUP.md)** - Complete Termux installation
+- ⚡ **[Advanced Features](ADVANCED_FEATURES.md)** - Professional features guide
+- 📖 **[Full README](#)** - You are here!
+
 ## ⚠️ Disclaimer
 
 This tool is provided for **educational purposes only**. Creating multiple Discord accounts or automating account creation may violate Discord's Terms of Service. Use at your own risk. The authors are not responsible for any misuse of this tool.
@@ -13,7 +20,8 @@ This tool is provided for **educational purposes only**. Creating multiple Disco
 - Browser opens automatically for CAPTCHA
 - Just solve CAPTCHA when prompted (takes 10-30 seconds)
 - Everything else is fully automatic
-- See [TERMUX_SETUP.md](TERMUX_SETUP.md) for complete guide
+- 📖 **[Quick Start Guide](QUICKSTART.md)** - Get started in 5 minutes!
+- 📖 **[Complete Termux Setup](TERMUX_SETUP.md)** - Full installation guide
 
 ## 🎯 Three Versions Available
 
