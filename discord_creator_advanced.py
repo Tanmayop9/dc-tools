@@ -240,46 +240,109 @@ class EmailService:
         self.primary_service = config.get('email', {}).get('primary_service', '1secmail')
     
     def get_email(self) -> Optional[str]:
-        """Get temporary email from primary or fallback service"""
-        if self.primary_service == '1secmail':
-            return self._get_1secmail()
-        elif self.primary_service == 'tempmail':
-            return self._get_tempmail()
-        elif self.primary_service == 'guerrillamail':
-            return self._get_guerrillamail()
+        """Get temporary email from primary or fallback service with retry"""
+        ColoredOutput.print_info("Getting temporary email...")
         
-        return self._get_1secmail()
+        # Try primary service with retries
+        email = self._try_service_with_retry(self.primary_service)
+        if email:
+            return email
+        
+        # Try fallback services
+        fallback_services = self.config.get('email', {}).get('fallback_services', ['tempmail', 'guerrillamail'])
+        ColoredOutput.print_warning(f"Primary service failed, trying {len(fallback_services)} fallback service(s)...")
+        
+        for service in fallback_services:
+            if service != self.primary_service:
+                ColoredOutput.print_info(f"Trying {service}...")
+                email = self._try_service_with_retry(service)
+                if email:
+                    return email
+        
+        # Last resort: generate offline email
+        ColoredOutput.print_warning("All services failed, generating offline email...")
+        return self._generate_offline_email()
+    
+    def _try_service_with_retry(self, service: str, max_retries: int = 3) -> Optional[str]:
+        """Try a service with multiple retry attempts"""
+        for attempt in range(max_retries):
+            if attempt > 0:
+                wait_time = 2 ** attempt
+                ColoredOutput.print_info(f"Retry {attempt + 1}/{max_retries} after {wait_time}s...")
+                time.sleep(wait_time)
+            
+            try:
+                if service == '1secmail':
+                    email = self._get_1secmail()
+                elif service == 'tempmail':
+                    email = self._get_tempmail()
+                elif service == 'guerrillamail':
+                    email = self._get_guerrillamail()
+                else:
+                    continue
+                
+                if email:
+                    ColoredOutput.print_success(f"Got email from {service}: {email}")
+                    return email
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    ColoredOutput.print_warning(f"{service} attempt {attempt + 1} failed, retrying...")
+                else:
+                    ColoredOutput.print_error(f"{service} failed after {max_retries} attempts")
+        
+        return None
+    
+    def _generate_offline_email(self) -> Optional[str]:
+        """Generate an email address offline as last resort"""
+        try:
+            import random
+            import string
+            random_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
+            email = f"{random_string}@1secmail.com"
+            ColoredOutput.print_warning(f"Generated offline email: {email}")
+            ColoredOutput.print_warning("Note: Email verification may not work if service is unavailable")
+            return email
+        except Exception as e:
+            ColoredOutput.print_error(f"Failed to generate offline email: {e}")
+            return None
     
     def _get_1secmail(self) -> Optional[str]:
         """Get email from 1secmail"""
         try:
-            response = self.session.get('https://www.1secmail.com/api/v1/?action=genRandomMailbox&count=1', timeout=10)
+            response = self.session.get(
+                'https://www.1secmail.com/api/v1/?action=genRandomMailbox&count=1',
+                timeout=15
+            )
             if response.status_code == 200:
                 return response.json()[0]
-        except Exception as e:
-            ColoredOutput.print_error(f"1secmail error: {e}")
+        except requests.exceptions.RequestException as e:
+            # Only log detailed error on last attempt
+            pass
         return None
     
     def _get_tempmail(self) -> Optional[str]:
         """Get email from temp-mail.org"""
         try:
-            # temp-mail.org API implementation
+            # Generate a tempmail-style address
             md5_hash = hashlib.md5(str(time.time()).encode()).hexdigest()
             email = f"{md5_hash[:10]}@tempmail.plus"
             return email
-        except Exception as e:
-            ColoredOutput.print_error(f"tempmail error: {e}")
+        except Exception:
+            pass
         return None
     
     def _get_guerrillamail(self) -> Optional[str]:
         """Get email from guerrillamail"""
         try:
-            response = self.session.get('https://api.guerrillamail.com/ajax.php?f=get_email_address', timeout=10)
+            response = self.session.get(
+                'https://api.guerrillamail.com/ajax.php?f=get_email_address',
+                timeout=15
+            )
             if response.status_code == 200:
                 data = response.json()
                 return data.get('email_addr')
-        except Exception as e:
-            ColoredOutput.print_error(f"guerrillamail error: {e}")
+        except requests.exceptions.RequestException:
+            pass
         return None
     
     def check_messages(self, email: str) -> List[Dict]:
