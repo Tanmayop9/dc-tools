@@ -15,6 +15,7 @@ from urllib.parse import urlparse, parse_qs
 class CaptchaServer(http.server.SimpleHTTPRequestHandler):
     """HTTP server to receive CAPTCHA solution"""
     captcha_solution = None
+    sitekey = None  # Store the sitekey for use in HTML generation
     
     def do_GET(self):
         """Handle GET requests"""
@@ -215,7 +216,7 @@ class CaptchaServer(http.server.SimpleHTTPRequestHandler):
                 
                 <form id="captcha-form" onsubmit="submitCaptcha(event)">
                     <div class="captcha-wrapper">
-                        <div class="h-captcha" data-sitekey="SITEKEY_PLACEHOLDER"></div>
+                        <div class="h-captcha" data-sitekey="{sitekey}"></div>
                     </div>
                     <button type="submit" id="submit-btn" disabled>Submit</button>
                 </form>
@@ -254,6 +255,13 @@ class CaptchaServer(http.server.SimpleHTTPRequestHandler):
         </body>
         </html>
         """
+        # Replace the sitekey placeholder with the actual sitekey
+        if CaptchaServer.sitekey:
+            html = html.format(sitekey=CaptchaServer.sitekey)
+        else:
+            # Fallback to default Discord sitekey if not set
+            html = html.format(sitekey='4c672d35-0701-42b2-88c3-78380b0db560')
+        
         self.wfile.write(html.encode())
     
     def log_message(self, format, *args):
@@ -301,8 +309,9 @@ class FreeCaptchaSolver:
         print("🔒 CAPTCHA Required - Manual Solving")
         print("="*60)
         
-        # Reset solution
+        # Reset solution and set sitekey
         CaptchaServer.captcha_solution = None
+        CaptchaServer.sitekey = sitekey
         
         # Start server
         if not self.start_server():
