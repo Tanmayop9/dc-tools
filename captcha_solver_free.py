@@ -15,6 +15,7 @@ from urllib.parse import urlparse, parse_qs
 class CaptchaServer(http.server.SimpleHTTPRequestHandler):
     """HTTP server to receive CAPTCHA solution"""
     captcha_solution = None
+    sitekey = None  # Store the sitekey for use in HTML generation
     
     def do_GET(self):
         """Handle GET requests"""
@@ -134,7 +135,7 @@ class CaptchaServer(http.server.SimpleHTTPRequestHandler):
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
             <style>
-                body {
+                body {{
                     font-family: Arial, sans-serif;
                     display: flex;
                     justify-content: center;
@@ -143,8 +144,8 @@ class CaptchaServer(http.server.SimpleHTTPRequestHandler):
                     margin: 0;
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                     padding: 20px;
-                }
-                .container {
+                }}
+                .container {{
                     background: white;
                     padding: 40px;
                     border-radius: 10px;
@@ -152,21 +153,21 @@ class CaptchaServer(http.server.SimpleHTTPRequestHandler):
                     text-align: center;
                     max-width: 500px;
                     width: 100%;
-                }
-                h1 {
+                }}
+                h1 {{
                     color: #333;
                     margin-bottom: 10px;
-                }
-                p {
+                }}
+                p {{
                     color: #666;
                     margin-bottom: 30px;
-                }
-                .captcha-wrapper {
+                }}
+                .captcha-wrapper {{
                     display: flex;
                     justify-content: center;
                     margin: 30px 0;
-                }
-                button {
+                }}
+                button {{
                     background: #5865F2;
                     color: white;
                     border: none;
@@ -175,28 +176,28 @@ class CaptchaServer(http.server.SimpleHTTPRequestHandler):
                     font-size: 16px;
                     cursor: pointer;
                     transition: background 0.3s;
-                }
-                button:hover {
+                }}
+                button:hover {{
                     background: #4752C4;
-                }
-                button:disabled {
+                }}
+                button:disabled {{
                     background: #ccc;
                     cursor: not-allowed;
-                }
-                .instructions {
+                }}
+                .instructions {{
                     background: #f0f0f0;
                     padding: 15px;
                     border-radius: 5px;
                     margin-bottom: 20px;
                     text-align: left;
-                }
-                .instructions ol {
+                }}
+                .instructions ol {{
                     margin: 10px 0;
                     padding-left: 20px;
-                }
-                .instructions li {
+                }}
+                .instructions li {{
                     margin: 5px 0;
-                }
+                }}
             </style>
         </head>
         <body>
@@ -215,7 +216,7 @@ class CaptchaServer(http.server.SimpleHTTPRequestHandler):
                 
                 <form id="captcha-form" onsubmit="submitCaptcha(event)">
                     <div class="captcha-wrapper">
-                        <div class="h-captcha" data-sitekey="SITEKEY_PLACEHOLDER"></div>
+                        <div class="h-captcha" data-sitekey="{sitekey}"></div>
                     </div>
                     <button type="submit" id="submit-btn" disabled>Submit</button>
                 </form>
@@ -227,33 +228,40 @@ class CaptchaServer(http.server.SimpleHTTPRequestHandler):
             
             <script>
                 // Enable submit button when CAPTCHA is solved
-                function onCaptchaSuccess() {
+                function onCaptchaSuccess() {{
                     document.getElementById('submit-btn').disabled = false;
-                }
+                }}
                 
-                function submitCaptcha(event) {
+                function submitCaptcha(event) {{
                     event.preventDefault();
                     
                     const response = hcaptcha.getResponse();
-                    if (response) {
+                    if (response) {{
                         // Redirect with CAPTCHA response
                         window.location.href = '/captcha?h-captcha-response=' + encodeURIComponent(response);
-                    } else {
+                    }} else {{
                         alert('Please complete the CAPTCHA first!');
-                    }
-                }
+                    }}
+                }}
                 
                 // Auto-enable button when CAPTCHA is solved
-                setInterval(function() {
+                setInterval(function() {{
                     const response = hcaptcha.getResponse();
-                    if (response) {
+                    if (response) {{
                         document.getElementById('submit-btn').disabled = false;
-                    }
-                }, 500);
+                    }}
+                }}, 500);
             </script>
         </body>
         </html>
         """
+        # Replace the sitekey placeholder with the actual sitekey
+        if CaptchaServer.sitekey:
+            html = html.format(sitekey=CaptchaServer.sitekey)
+        else:
+            # Fallback to default Discord sitekey if not set
+            html = html.format(sitekey='4c672d35-0701-42b2-88c3-78380b0db560')
+        
         self.wfile.write(html.encode())
     
     def log_message(self, format, *args):
@@ -301,8 +309,9 @@ class FreeCaptchaSolver:
         print("🔒 CAPTCHA Required - Manual Solving")
         print("="*60)
         
-        # Reset solution
+        # Reset solution and set sitekey
         CaptchaServer.captcha_solution = None
+        CaptchaServer.sitekey = sitekey
         
         # Start server
         if not self.start_server():
