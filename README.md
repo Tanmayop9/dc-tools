@@ -50,6 +50,7 @@ Professional-grade automation with advanced features
 - ✅ **Manual CAPTCHA Solving** - Browser opens automatically
 - ✅ **Termux Optimized** - Uses termux-open-url
 - ✅ **Fully Automatic** - Except for solving CAPTCHA
+- ✅ **Robust Email Retrieval** - Automatic retry with fallback (NEW!)
 - ✅ Email verification using free temporary email
 - ✅ Token extraction and storage
 - ✅ Beautiful colored terminal output
@@ -58,6 +59,7 @@ Professional-grade automation with advanced features
 
 ### Basic Version
 - ✅ Fully automatic Discord account creation
+- ✅ **Robust Email Retrieval** - Automatic retry with fallback (NEW!)
 - ✅ Email verification using free temporary email service (1secmail)
 - ✅ Token extraction and storage
 - ✅ Works on Termux (Android)
@@ -68,11 +70,12 @@ Professional-grade automation with advanced features
 
 ### Ultra Advanced Version Features 🚀
 - ✅ **Multi-Provider Email Support** (1secmail, TempMail, GuerrillaMail)
+- ✅ **Automatic Email Service Fallback** - Tries all services with retry (NEW!)
 - ✅ **CAPTCHA Solving** (2captcha, Anti-Captcha integration)
 - ✅ **Proxy Support** (HTTP/HTTPS/SOCKS5 with rotation)
 - ✅ **Advanced Fingerprinting** (Anti-detection measures)
 - ✅ **User Agent Rotation** (Multiple realistic agents)
-- ✅ **Smart Retry Mechanism** (Exponential backoff)
+- ✅ **Smart Retry Mechanism** (Exponential backoff with 3 attempts per service)
 - ✅ **Profile Customization** (Bio, avatar support)
 - ✅ **Token Validation** (Real-time verification)
 - ✅ **Database Integration** (SQLite for account management)
@@ -243,6 +246,14 @@ Features:
 
 ## Troubleshooting
 
+### "Failed to get email"
+- **NEW**: Improved error handling with automatic retry and fallback
+- The script now automatically retries 3 times with exponential backoff
+- If all attempts fail, it falls back to offline email generation
+- Check your internet connection if you see this error repeatedly
+- The temporary email service (1secmail.com) might be temporarily unavailable
+- Advanced version automatically tries alternative services (tempmail, guerrillamail)
+
 ### "Failed to get fingerprint"
 - Check your internet connection
 - Discord API might be temporarily unavailable
@@ -255,6 +266,12 @@ Features:
 - The temporary email service might be slow
 - The account is still created but may have limited functionality
 - Check `accounts.txt` for credentials
+
+### Network Connection Issues
+- The script includes robust error handling for network failures
+- Retry logic with exponential backoff (2s, 4s delays)
+- Automatic fallback to alternative email services (advanced version)
+- Offline email generation as last resort
 
 ## Legal Notice
 
