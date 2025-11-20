@@ -40,18 +40,45 @@ class DiscordAccountCreator:
         return password
     
     def get_temp_email(self):
-        """Get a temporary email using 1secmail API (free service)"""
+        """Get a temporary email using 1secmail API (free service) with retry and fallback"""
+        print("[*] Getting temporary email...")
+        
+        # Try 1secmail with multiple attempts
+        for attempt in range(3):
+            try:
+                if attempt > 0:
+                    print(f"[*] Retry attempt {attempt + 1}/3...")
+                    time.sleep(2 ** attempt)  # Exponential backoff: 2s, 4s
+                
+                response = self.session.get(
+                    'https://www.1secmail.com/api/v1/?action=genRandomMailbox&count=1',
+                    timeout=15
+                )
+                if response.status_code == 200:
+                    email = response.json()[0]
+                    print(f"[+] Generated temp email: {email}")
+                    return email
+            except Exception as e:
+                error_type = type(e).__name__
+                if attempt < 2:
+                    print(f"[!] Attempt {attempt + 1} failed ({error_type}), retrying...")
+                else:
+                    print(f"[-] All attempts to get email from 1secmail failed")
+                    print(f"[-] Error: {error_type}: {str(e)}")
+        
+        # Try alternative fallback - generate offline email
+        print("[*] Trying alternative email generation...")
         try:
-            # Get random email
-            response = self.session.get('https://www.1secmail.com/api/v1/?action=genRandomMailbox&count=1')
-            if response.status_code == 200:
-                email = response.json()[0]
-                print(f"[+] Generated temp email: {email}")
-                return email
-            return None
+            import hashlib
+            random_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
+            email = f"{random_string}@1secmail.com"
+            print(f"[+] Generated email (offline mode): {email}")
+            print(f"[!] Note: Email verification may not work if service is unavailable")
+            return email
         except Exception as e:
-            print(f"[-] Error getting temp email: {e}")
-            return None
+            print(f"[-] Fallback email generation failed: {e}")
+        
+        return None
     
     def check_email_messages(self, email):
         """Check for new messages in temp email"""

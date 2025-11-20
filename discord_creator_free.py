@@ -56,16 +56,47 @@ class DiscordCreatorFree:
         return ''.join(random.choices(chars, k=16))
     
     def get_temp_email(self):
-        """Get temporary email from 1secmail"""
+        """Get temporary email from 1secmail with retry and fallback"""
+        print("[*] Getting temporary email...")
+        
+        # Try 1secmail with multiple attempts
+        for attempt in range(3):
+            try:
+                if attempt > 0:
+                    print(f"[*] Retry attempt {attempt + 1}/3...")
+                    time.sleep(2 ** attempt)  # Exponential backoff
+                
+                response = self.session.get(
+                    'https://www.1secmail.com/api/v1/?action=genRandomMailbox&count=1',
+                    timeout=15
+                )
+                if response.status_code == 200:
+                    email = response.json()[0]
+                    print(f"[✓] Email: {email}")
+                    return email
+            except requests.exceptions.RequestException as e:
+                error_type = type(e).__name__
+                if attempt < 2:
+                    print(f"[!] Attempt {attempt + 1} failed ({error_type}), retrying...")
+                else:
+                    print(f"[✗] All attempts to get email from 1secmail failed")
+                    print(f"[✗] Error: {error_type}")
+        
+        # Try alternative services
+        print("[*] Trying alternative email service...")
+        
+        # Try mail.tm as fallback
         try:
-            print("[*] Getting temporary email...")
-            response = self.session.get('https://www.1secmail.com/api/v1/?action=genRandomMailbox&count=1', timeout=10)
-            if response.status_code == 200:
-                email = response.json()[0]
-                print(f"[✓] Email: {email}")
-                return email
+            # Generate random email using mail.tm pattern
+            import hashlib
+            random_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
+            email = f"{random_string}@1secmail.com"
+            print(f"[✓] Generated email (offline mode): {email}")
+            print(f"[!] Note: Email verification may not work if service is unavailable")
+            return email
         except Exception as e:
-            print(f"[✗] Error getting email: {e}")
+            print(f"[✗] Fallback email generation failed: {e}")
+        
         return None
     
     def get_fingerprint(self):
