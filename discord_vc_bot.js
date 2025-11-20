@@ -575,8 +575,6 @@ class VoiceChannelBot {
     }, CONFIG.heartbeatInterval);
   }
 
-
-
   /**
    * Clean up resources
    */
