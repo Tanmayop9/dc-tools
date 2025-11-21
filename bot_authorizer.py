@@ -93,6 +93,62 @@ class BotAuthorizer:
         else:
             ColoredOutput.print_warning("No CAPTCHA solver available")
     
+    def get_user_guilds(self) -> list:
+        """
+        Get all guilds where the user has permissions
+        
+        Returns:
+            List of guilds with their details
+        """
+        try:
+            response = self.session.get(f"{self.api_base}/users/@me/guilds")
+            
+            if response.status_code == 200:
+                guilds = response.json()
+                ColoredOutput.print_success(f"Found {len(guilds)} guilds")
+                return guilds
+            else:
+                ColoredOutput.print_error(f"Failed to fetch guilds: {response.status_code}")
+                return []
+        except Exception as e:
+            ColoredOutput.print_error(f"Error fetching guilds: {str(e)}")
+            return []
+    
+    def filter_guilds_with_permissions(self, guilds: list, required_permission: int = 0x20) -> list:
+        """
+        Filter guilds where user has specific permissions
+        
+        Args:
+            guilds: List of guilds
+            required_permission: Permission bit (0x20 = MANAGE_GUILD, 0x8 = ADMINISTRATOR)
+            
+        Returns:
+            List of guilds where user has required permissions
+        """
+        filtered_guilds = []
+        for guild in guilds:
+            permissions = int(guild.get('permissions', 0))
+            # Check if user has required permission or is administrator
+            if (permissions & required_permission) or (permissions & 0x8):
+                filtered_guilds.append(guild)
+        
+        ColoredOutput.print_info(f"Found {len(filtered_guilds)} guilds with required permissions")
+        return filtered_guilds
+    
+    def build_oauth_url(self, client_id: str, permissions: str = "0", scope: str = "bot") -> str:
+        """
+        Build OAuth2 URL from client ID
+        
+        Args:
+            client_id: Bot's application/client ID
+            permissions: Permission integer (default: "0")
+            scope: OAuth scope (default: "bot")
+            
+        Returns:
+            Full OAuth2 authorization URL
+        """
+        return f"https://discord.com/api/oauth2/authorize?client_id={client_id}&scope={scope}&permissions={permissions}"
+    
     def validate_oauth_url(self, oauth_url: str) -> bool:
         """
         Validate if the provided URL is a valid Discord OAuth2 authorization URL
@@ -254,6 +310,99 @@ class BotAuthorizer:
         # No solver available
         ColoredOutput.print_error("No CAPTCHA solver available!")
         return None
+    
+    def authorize_bot_to_all_guilds(self, client_id: str, permissions: str = "0") -> Dict:
+        """
+        Authorize bot to all guilds where user has permissions
+        
+        Args:
+            client_id: Bot's application/client ID
+            permissions: Permission integer (default: "0")
+            
+        Returns:
+            Dictionary with results for each guild
+        """
+        # Get all user guilds
+        ColoredOutput.print_info("Fetching your guilds...")
+        guilds = self.get_user_guilds()
+        
+        if not guilds:
+            ColoredOutput.print_error("No guilds found or unable to fetch guilds")
+            return {'error': 'No guilds found', 'results': []}
+        
+        # Filter guilds where user has manage server permission
+        manageable_guilds = self.filter_guilds_with_permissions(guilds)
+        
+        if not manageable_guilds:
+            ColoredOutput.print_warning("No guilds found where you have manage server permissions")
+            return {'error': 'No manageable guilds', 'results': []}
+        
+        # Display guilds
+        ColoredOutput.print_info("\nGuilds where you can add the bot:")
+        for i, guild in enumerate(manageable_guilds, 1):
+            ColoredOutput.print_info(f"  {i}. {guild.get('name', 'Unknown')} (ID: {guild.get('id', 'Unknown')})")
+        
+        print()
+        results = []
+        successful = 0
+        failed = 0
+        
+        # Build OAuth URL
+        oauth_url = self.build_oauth_url(client_id, permissions)
+        
+        # Authorize bot to each guild
+        for i, guild in enumerate(manageable_guilds, 1):
+            guild_id = guild.get('id')
+            guild_name = guild.get('name', 'Unknown')
+            
+            ColoredOutput.print_info(f"\n[{i}/{len(manageable_guilds)}] Adding bot to: {guild_name}")
+            
+            options = {
+                'guild_id': guild_id,
+                'permissions': permissions,
+                'integration_type': 0
+            }
+            
+            result = self.authorize_url(oauth_url, options)
+            
+            if 'error' not in result:
+                ColoredOutput.print_success(f"✓ Bot added to {guild_name}")
+                successful += 1
+                results.append({
+                    'guild_id': guild_id,
+                    'guild_name': guild_name,
+                    'status': 'success',
+                    'result': result
+                })
+            else:
+                ColoredOutput.print_error(f"✗ Failed to add bot to {guild_name}")
+                failed += 1
+                results.append({
+                    'guild_id': guild_id,
+                    'guild_name': guild_name,
+                    'status': 'failed',
+                    'error': result.get('error', 'Unknown error')
+                })
+            
+            # Rate limiting - wait between requests
+            if i < len(manageable_guilds):
+                time.sleep(2)
+        
+        # Summary
+        print()
+        ColoredOutput.print_info("=" * 60)
+        ColoredOutput.print_info("Authorization Summary")
+        ColoredOutput.print_info("=" * 60)
+        ColoredOutput.print_success(f"Successful: {successful}/{len(manageable_guilds)}")
+        if failed > 0:
+            ColoredOutput.print_error(f"Failed: {failed}/{len(manageable_guilds)}")
+        
+        return {
+            'total': len(manageable_guilds),
+            'successful': successful,
+            'failed': failed,
+            'results': results
+        }
 
 
 def main():
@@ -276,22 +425,34 @@ def main():
         ColoredOutput.print_error("Token is required!")
         sys.exit(1)
     
-    # Get OAuth2 URL
-    print(f"\n{ColoredOutput.CYAN}Enter the bot OAuth2 authorization URL:{ColoredOutput.ENDC}")
-    print(f"{ColoredOutput.WARNING}Example: https://discord.com/api/oauth2/authorize?client_id=123456789&scope=bot&permissions=8{ColoredOutput.ENDC}")
-    oauth_url = input("> ").strip()
+    # Get bot client ID
+    print(f"\n{ColoredOutput.CYAN}Enter the bot Client ID:{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.WARNING}Example: 123456789012345678{ColoredOutput.ENDC}")
+    client_id = input("> ").strip()
     
-    if not oauth_url:
-        ColoredOutput.print_error("OAuth2 URL is required!")
+    if not client_id:
+        ColoredOutput.print_error("Client ID is required!")
         sys.exit(1)
-    
-    # Get guild ID
-    print(f"\n{ColoredOutput.CYAN}Enter the Guild ID (default: 283939):{ColoredOutput.ENDC}")
-    guild_id = input("> ").strip() or "283939"
     
     # Get permissions (optional)
     print(f"\n{ColoredOutput.CYAN}Enter permissions (default: 0 for no permissions):{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.WARNING}Common values: 0=None, 8=Admin, 2048=Send Messages, 2147483647=All{ColoredOutput.ENDC}")
     permissions = input("> ").strip() or "0"
+    
+    # Ask about authorization mode
+    print(f"\n{ColoredOutput.CYAN}Authorization mode:{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.WARNING}1. Add bot to ALL servers where you have permissions (recommended){ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.WARNING}2. Add bot to a SPECIFIC server{ColoredOutput.ENDC}")
+    mode = input(f"{ColoredOutput.CYAN}Enter mode (1 or 2, default: 1): {ColoredOutput.ENDC}").strip() or "1"
+    
+    # Get guild ID only if specific mode
+    guild_id = None
+    if mode == "2":
+        print(f"\n{ColoredOutput.CYAN}Enter the Guild ID:{ColoredOutput.ENDC}")
+        guild_id = input("> ").strip()
+        if not guild_id:
+            ColoredOutput.print_error("Guild ID is required for specific server mode!")
+            sys.exit(1)
     
     # Ask about LLM CAPTCHA
     print(f"\n{ColoredOutput.CYAN}Use free LLM for CAPTCHA solving? (Y/n):{ColoredOutput.ENDC}")
@@ -302,36 +463,63 @@ def main():
     # Create authorizer
     authorizer = BotAuthorizer(user_token, use_llm_captcha=use_llm_captcha)
     
-    # Prepare options
-    options = {
-        'guild_id': guild_id,
-        'permissions': permissions,
-        'integration_type': 0
-    }
-    
     print()
     ColoredOutput.print_info("Starting authorization process...")
     
-    # Authorize the bot
-    result = authorizer.authorize_url(oauth_url, options)
-    
-    # Display results
-    print()
-    if 'error' not in result:
-        ColoredOutput.print_success("=" * 60)
-        ColoredOutput.print_success("Bot successfully added to the guild!")
-        ColoredOutput.print_success("=" * 60)
+    # Authorize based on mode
+    if mode == "1":
+        # Add to all guilds
+        result = authorizer.authorize_bot_to_all_guilds(client_id, permissions)
+        
+        # Display results
         print()
-        ColoredOutput.print_info("Response details:")
-        print(json.dumps(result, indent=2))
+        if result.get('successful', 0) > 0:
+            ColoredOutput.print_success("=" * 60)
+            ColoredOutput.print_success("Bot authorization completed!")
+            ColoredOutput.print_success("=" * 60)
+            print()
+            ColoredOutput.print_info("Summary:")
+            print(json.dumps({
+                'total_guilds': result.get('total', 0),
+                'successful': result.get('successful', 0),
+                'failed': result.get('failed', 0)
+            }, indent=2))
+            
+            if result.get('failed', 0) > 0:
+                ColoredOutput.print_warning("\nSome guilds failed. Check details above.")
+        else:
+            ColoredOutput.print_error("=" * 60)
+            ColoredOutput.print_error("Failed to add bot to any guild")
+            ColoredOutput.print_error("=" * 60)
+            sys.exit(1)
     else:
-        ColoredOutput.print_error("=" * 60)
-        ColoredOutput.print_error("Failed to add bot to guild")
-        ColoredOutput.print_error("=" * 60)
+        # Add to specific guild
+        oauth_url = authorizer.build_oauth_url(client_id, permissions)
+        options = {
+            'guild_id': guild_id,
+            'permissions': permissions,
+            'integration_type': 0
+        }
+        
+        result = authorizer.authorize_url(oauth_url, options)
+        
+        # Display results
         print()
-        ColoredOutput.print_info("Error details:")
-        print(json.dumps(result, indent=2))
-        sys.exit(1)
+        if 'error' not in result:
+            ColoredOutput.print_success("=" * 60)
+            ColoredOutput.print_success("Bot successfully added to the guild!")
+            ColoredOutput.print_success("=" * 60)
+            print()
+            ColoredOutput.print_info("Response details:")
+            print(json.dumps(result, indent=2))
+        else:
+            ColoredOutput.print_error("=" * 60)
+            ColoredOutput.print_error("Failed to add bot to guild")
+            ColoredOutput.print_error("=" * 60)
+            print()
+            ColoredOutput.print_info("Error details:")
+            print(json.dumps(result, indent=2))
+            sys.exit(1)
 
 
 if __name__ == "__main__":

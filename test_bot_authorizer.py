@@ -73,6 +73,53 @@ def test_parameter_parsing():
         return False
 
 
+def test_build_oauth_url():
+    """Test OAuth URL building from client ID"""
+    print("\nTesting OAuth URL building...")
+    
+    authorizer = BotAuthorizer("test_token")
+    
+    # Test basic URL building
+    client_id = "123456789012345678"
+    oauth_url = authorizer.build_oauth_url(client_id)
+    
+    expected_url = "https://discord.com/api/oauth2/authorize?client_id=123456789012345678&scope=bot&permissions=0"
+    
+    if oauth_url == expected_url:
+        ColoredOutput.print_success(f"Built URL: {oauth_url}")
+        return True
+    else:
+        ColoredOutput.print_error(f"Expected: {expected_url}")
+        ColoredOutput.print_error(f"Got: {oauth_url}")
+        return False
+
+
+def test_filter_guilds_with_permissions():
+    """Test guild filtering based on permissions"""
+    print("\nTesting guild filtering...")
+    
+    authorizer = BotAuthorizer("test_token")
+    
+    # Mock guilds data
+    guilds = [
+        {'id': '123', 'name': 'Test Guild 1', 'permissions': '32'},  # MANAGE_GUILD
+        {'id': '456', 'name': 'Test Guild 2', 'permissions': '8'},   # ADMINISTRATOR
+        {'id': '789', 'name': 'Test Guild 3', 'permissions': '0'},   # No permissions
+        {'id': '101', 'name': 'Test Guild 4', 'permissions': '2048'} # SEND_MESSAGES only
+    ]
+    
+    # Filter guilds with MANAGE_GUILD permission (0x20 = 32)
+    filtered = authorizer.filter_guilds_with_permissions(guilds, 0x20)
+    
+    # Should return 2 guilds (Test Guild 1 with MANAGE_GUILD and Test Guild 2 with ADMINISTRATOR)
+    if len(filtered) == 2:
+        ColoredOutput.print_success(f"Correctly filtered {len(filtered)} guilds with permissions")
+        return True
+    else:
+        ColoredOutput.print_error(f"Expected 2 guilds, got {len(filtered)}")
+        return False
+
+
 def main():
     """Run all tests"""
     print("=" * 60)
@@ -83,6 +130,8 @@ def main():
     tests = [
         ("OAuth URL Validation", test_oauth_url_validation),
         ("Parameter Parsing", test_parameter_parsing),
+        ("OAuth URL Building", test_build_oauth_url),
+        ("Guild Filtering", test_filter_guilds_with_permissions),
     ]
     
     results = []
