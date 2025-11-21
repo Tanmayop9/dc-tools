@@ -234,9 +234,12 @@ class BotAuthorizer:
                         
                         captcha_sitekey = error_data.get('captcha_sitekey', [''])[0] if isinstance(error_data.get('captcha_sitekey'), list) else error_data.get('captcha_sitekey', '')
                         captcha_service = error_data.get('captcha_service', 'hcaptcha')
+                        captcha_rqtoken = error_data.get('captcha_rqtoken', '')
                         
                         ColoredOutput.print_info(f"CAPTCHA service: {captcha_service}")
                         ColoredOutput.print_info(f"Site key: {captcha_sitekey}")
+                        if captcha_rqtoken:
+                            ColoredOutput.print_info(f"RQToken: {captcha_rqtoken[:20]}...")
                         
                         # Try to solve CAPTCHA
                         captcha_solution = self._solve_captcha(captcha_sitekey, oauth_url, captcha_service)
@@ -244,26 +247,41 @@ class BotAuthorizer:
                         if captcha_solution:
                             ColoredOutput.print_success("CAPTCHA solved! Retrying authorization...")
                             
-                            # Add CAPTCHA solution to options
+                            # Add CAPTCHA solution to options - must be list format for Discord API
                             final_options['captcha_key'] = captcha_solution
+                            if captcha_rqtoken:
+                                final_options['captcha_rqtoken'] = captcha_rqtoken
+                            
+                            # Log the retry attempt for debugging
+                            ColoredOutput.print_info("Retrying authorization with CAPTCHA solution...")
+                            ColoredOutput.print_info(f"Request params: {query_only}")
+                            ColoredOutput.print_info(f"Guild ID: {final_options.get('guild_id', 'N/A')}")
                             
                             # Retry with CAPTCHA solution
-                            response = self.session.post(
+                            retry_response = self.session.post(
                                 api_url,
                                 params=query_only,
                                 json=final_options
                             )
                             
-                            if response.status_code == 200:
+                            if retry_response.status_code == 200:
                                 ColoredOutput.print_success("Bot authorized successfully (with CAPTCHA)!")
-                                return response.json()
+                                return retry_response.json()
                             else:
-                                ColoredOutput.print_error(f"Authorization failed even with CAPTCHA: {response.status_code}")
-                                return {'error': response.text, 'status_code': response.status_code}
+                                ColoredOutput.print_error(f"Authorization failed even with CAPTCHA: {retry_response.status_code}")
+                                ColoredOutput.print_error(f"Response body: {retry_response.text}")
+                                # Try to parse error details
+                                try:
+                                    error_details = retry_response.json()
+                                    ColoredOutput.print_error(f"Error details: {json.dumps(error_details, indent=2)}")
+                                except:
+                                    pass
+                                return {'error': retry_response.text, 'status_code': retry_response.status_code, 'details': 'CAPTCHA solution may be invalid or expired'}
                         else:
                             ColoredOutput.print_error("Failed to solve CAPTCHA")
                             return {'error': 'CAPTCHA solving failed', 'status_code': 400}
-                except:
+                except Exception as e:
+                    ColoredOutput.print_error(f"Error handling CAPTCHA: {str(e)}")
                     pass
             
             ColoredOutput.print_error(f"Authorization failed: {response.status_code}")
