@@ -87,6 +87,9 @@ class BotAuthorizer:
         if use_llm_captcha and LLM_CAPTCHA_AVAILABLE:
             ColoredOutput.print_success("Free LLM CAPTCHA solver enabled!")
             self.llm_solver = LLMCaptchaSolver()
+            # Always initialize manual solver as fallback
+            if FREE_CAPTCHA_AVAILABLE:
+                self.manual_solver = FreeCaptchaSolver()
         elif FREE_CAPTCHA_AVAILABLE:
             ColoredOutput.print_info("Using manual CAPTCHA solver (browser-based)")
             self.manual_solver = FreeCaptchaSolver()

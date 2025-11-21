@@ -271,15 +271,31 @@ class CaptchaServer(http.server.SimpleHTTPRequestHandler):
 class FreeCaptchaSolver:
     """Free CAPTCHA solver using manual browser solving"""
     
+    PORT_SEARCH_RANGE = 10  # Number of ports to try when finding available port
+    
     def __init__(self, port=8888):
         self.port = port
         self.server = None
         self.server_thread = None
+        self._find_available_port()
+    
+    def _find_available_port(self):
+        """Find an available port if the default is in use"""
+        import socket
+        for port in range(self.port, self.port + self.PORT_SEARCH_RANGE):
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.bind(('127.0.0.1', port))
+                    self.port = port
+                    return
+            except OSError:
+                continue
+        # If no port found in range, keep the original and let it fail gracefully
     
     def start_server(self):
         """Start HTTP server"""
         try:
-            self.server = socketserver.TCPServer(("", self.port), CaptchaServer)
+            self.server = socketserver.TCPServer(("127.0.0.1", self.port), CaptchaServer)
             self.server_thread = threading.Thread(target=self.server.serve_forever)
             self.server_thread.daemon = True
             self.server_thread.start()
@@ -294,12 +310,13 @@ class FreeCaptchaSolver:
             self.server.shutdown()
             self.server = None
     
-    def solve_captcha(self, sitekey, timeout=300):
+    def solve_captcha(self, sitekey, url, timeout=300):
         """
         Solve CAPTCHA by opening browser for manual solving
         
         Args:
             sitekey: hCaptcha site key
+            url: The page URL (not used in manual solving, but kept for API compatibility)
             timeout: Maximum wait time in seconds
         
         Returns:
@@ -386,8 +403,9 @@ def test_solver():
     
     # Example sitekey (Discord's hCaptcha sitekey)
     sitekey = "4c672d35-0701-42b2-88c3-78380b0db560"
+    test_url = "https://discord.com/api/oauth2/authorize"
     
-    solution = solver.solve_captcha(sitekey, timeout=120)
+    solution = solver.solve_captcha(sitekey, test_url, timeout=120)
     
     if solution:
         print(f"\n[✓] Solution: {solution[:50]}...")
