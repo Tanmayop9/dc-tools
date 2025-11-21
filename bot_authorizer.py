@@ -4,7 +4,7 @@ Discord Bot Authorization Script - For Educational Purposes Only
 Automatically authorizes a bot to join a guild using OAuth2
 Inspired by discord.js-selfbot-v13
 
-⚠️ DISCLAIMER: This tool is for educational and research purposes only.
+DISCLAIMER: This tool is for educational and research purposes only.
 Use at your own risk. The authors are not responsible for any misuse.
 """
 
@@ -42,11 +42,11 @@ class ColoredOutput:
 
     @staticmethod
     def print_success(msg):
-        print(f"{ColoredOutput.GREEN}[✓] {msg}{ColoredOutput.ENDC}")
+        print(f"{ColoredOutput.GREEN}[+] {msg}{ColoredOutput.ENDC}")
     
     @staticmethod
     def print_error(msg):
-        print(f"{ColoredOutput.FAIL}[✗] {msg}{ColoredOutput.ENDC}")
+        print(f"{ColoredOutput.FAIL}[-] {msg}{ColoredOutput.ENDC}")
     
     @staticmethod
     def print_info(msg):
@@ -85,13 +85,69 @@ class BotAuthorizer:
         self.manual_solver = None
         
         if use_llm_captcha and LLM_CAPTCHA_AVAILABLE:
-            ColoredOutput.print_success("✨ Free LLM CAPTCHA solver enabled!")
+            ColoredOutput.print_success("Free LLM CAPTCHA solver enabled!")
             self.llm_solver = LLMCaptchaSolver()
         elif FREE_CAPTCHA_AVAILABLE:
             ColoredOutput.print_info("Using manual CAPTCHA solver (browser-based)")
             self.manual_solver = FreeCaptchaSolver()
         else:
             ColoredOutput.print_warning("No CAPTCHA solver available")
+    
+    def get_user_guilds(self) -> list:
+        """
+        Get all guilds where the user has permissions
+        
+        Returns:
+            List of guilds with their details
+        """
+        try:
+            response = self.session.get(f"{self.api_base}/users/@me/guilds")
+            
+            if response.status_code == 200:
+                guilds = response.json()
+                ColoredOutput.print_success(f"Found {len(guilds)} guilds")
+                return guilds
+            else:
+                ColoredOutput.print_error(f"Failed to fetch guilds: {response.status_code}")
+                return []
+        except Exception as e:
+            ColoredOutput.print_error(f"Error fetching guilds: {str(e)}")
+            return []
+    
+    def filter_guilds_with_permissions(self, guilds: list, required_permission: int = 0x20) -> list:
+        """
+        Filter guilds where user has specific permissions
+        
+        Args:
+            guilds: List of guilds
+            required_permission: Permission bit (0x20 = MANAGE_GUILD, 0x8 = ADMINISTRATOR)
+            
+        Returns:
+            List of guilds where user has required permissions
+        """
+        filtered_guilds = []
+        for guild in guilds:
+            permissions = int(guild.get('permissions', 0))
+            # Check if user has required permission or is administrator
+            if (permissions & required_permission) or (permissions & 0x8):
+                filtered_guilds.append(guild)
+        
+        ColoredOutput.print_info(f"Found {len(filtered_guilds)} guilds with required permissions")
+        return filtered_guilds
+    
+    def build_oauth_url(self, client_id: str, permissions: str = "0", scope: str = "bot") -> str:
+        """
+        Build OAuth2 URL from client ID
+        
+        Args:
+            client_id: Bot's application/client ID
+            permissions: Permission integer (default: "0")
+            scope: OAuth scope (default: "bot")
+            
+        Returns:
+            Full OAuth2 authorization URL
+        """
+        return f"https://discord.com/api/oauth2/authorize?client_id={client_id}&scope={scope}&permissions={permissions}"
     
     def validate_oauth_url(self, oauth_url: str) -> bool:
         """
@@ -231,7 +287,7 @@ class BotAuthorizer:
         
         # Try LLM solver first (free, automatic)
         if self.llm_solver and self.use_llm_captcha:
-            ColoredOutput.print_info("🤖 Using free LLM CAPTCHA solver...")
+            ColoredOutput.print_info("Using free LLM CAPTCHA solver...")
             try:
                 solution = self.llm_solver.solve_hcaptcha(sitekey, url)
                 if solution:
@@ -243,7 +299,7 @@ class BotAuthorizer:
         
         # Fallback to manual solver (browser-based, free)
         if self.manual_solver:
-            ColoredOutput.print_info("🌐 Opening browser for manual CAPTCHA solving...")
+            ColoredOutput.print_info("Opening browser for manual CAPTCHA solving...")
             ColoredOutput.print_warning("Please solve the CAPTCHA in your browser")
             try:
                 solution = self.manual_solver.solve_captcha(sitekey, url)
@@ -254,84 +310,254 @@ class BotAuthorizer:
         # No solver available
         ColoredOutput.print_error("No CAPTCHA solver available!")
         return None
+    
+    def authorize_bot_to_all_guilds(self, client_id: str, permissions: str = "0") -> Dict:
+        """
+        Authorize bot to all guilds where user has permissions
+        
+        Args:
+            client_id: Bot's application/client ID
+            permissions: Permission integer (default: "0")
+            
+        Returns:
+            Dictionary with results for each guild
+        """
+        # Get all user guilds
+        ColoredOutput.print_info("Fetching your guilds...")
+        guilds = self.get_user_guilds()
+        
+        if not guilds:
+            ColoredOutput.print_error("No guilds found or unable to fetch guilds")
+            return {'error': 'No guilds found', 'results': []}
+        
+        # Filter guilds where user has manage server permission
+        manageable_guilds = self.filter_guilds_with_permissions(guilds)
+        
+        if not manageable_guilds:
+            ColoredOutput.print_warning("No guilds found where you have manage server permissions")
+            return {'error': 'No manageable guilds', 'results': []}
+        
+        # Display guilds
+        print(f"\n{ColoredOutput.CYAN}╔{'═' * 58}╗{ColoredOutput.ENDC}")
+        print(f"{ColoredOutput.CYAN}║{ColoredOutput.ENDC} {ColoredOutput.BOLD}Guilds where you can add the bot:{ColoredOutput.ENDC}                    {ColoredOutput.CYAN}║{ColoredOutput.ENDC}")
+        print(f"{ColoredOutput.CYAN}╠{'═' * 58}╣{ColoredOutput.ENDC}")
+        for i, guild in enumerate(manageable_guilds, 1):
+            guild_name = guild.get('name', 'Unknown')
+            # Safely truncate guild name to fit in 40 characters, handling Unicode
+            if len(guild_name) > 40:
+                guild_name = guild_name[:37] + '...'
+            guild_id = guild.get('id', 'Unknown')
+            # Use ljust for better Unicode handling
+            print(f"{ColoredOutput.CYAN}║{ColoredOutput.ENDC} {ColoredOutput.WARNING}[{i}]{ColoredOutput.ENDC} {guild_name.ljust(40)} {ColoredOutput.CYAN}║{ColoredOutput.ENDC}")
+        print(f"{ColoredOutput.CYAN}╚{'═' * 58}╝{ColoredOutput.ENDC}")
+        
+        print()
+        results = []
+        successful = 0
+        failed = 0
+        
+        # Build OAuth URL
+        oauth_url = self.build_oauth_url(client_id, permissions)
+        
+        # Authorize bot to each guild
+        for i, guild in enumerate(manageable_guilds, 1):
+            guild_id = guild.get('id')
+            guild_name = guild.get('name', 'Unknown')
+            
+            print(f"\n{ColoredOutput.BLUE}[{i}/{len(manageable_guilds)}]{ColoredOutput.ENDC} Adding bot to: {ColoredOutput.BOLD}{guild_name}{ColoredOutput.ENDC}")
+            
+            options = {
+                'guild_id': guild_id,
+                'permissions': permissions,
+                'integration_type': 0
+            }
+            
+            result = self.authorize_url(oauth_url, options)
+            
+            if 'error' not in result:
+                ColoredOutput.print_success(f"Bot added to {guild_name}")
+                successful += 1
+                results.append({
+                    'guild_id': guild_id,
+                    'guild_name': guild_name,
+                    'status': 'success',
+                    'result': result
+                })
+            else:
+                ColoredOutput.print_error(f"Failed to add bot to {guild_name}")
+                failed += 1
+                results.append({
+                    'guild_id': guild_id,
+                    'guild_name': guild_name,
+                    'status': 'failed',
+                    'error': result.get('error', 'Unknown error')
+                })
+            
+            # Rate limiting - wait between requests to avoid Discord API rate limits
+            # Discord typically allows around 5 requests per second, so 2 seconds is conservative
+            if i < len(manageable_guilds):
+                time.sleep(2)
+        
+        # Summary
+        print()
+        print(f"{ColoredOutput.CYAN}{'─' * 60}{ColoredOutput.ENDC}")
+        print(f"{ColoredOutput.BOLD}{ColoredOutput.CYAN}           AUTHORIZATION SUMMARY{ColoredOutput.ENDC}")
+        print(f"{ColoredOutput.CYAN}{'─' * 60}{ColoredOutput.ENDC}")
+        ColoredOutput.print_success(f"Successful: {successful}/{len(manageable_guilds)}")
+        if failed > 0:
+            ColoredOutput.print_error(f"Failed: {failed}/{len(manageable_guilds)}")
+        
+        return {
+            'total': len(manageable_guilds),
+            'successful': successful,
+            'failed': failed,
+            'results': results
+        }
 
 
 def main():
     """Main function"""
     print(f"{ColoredOutput.BOLD}{ColoredOutput.HEADER}")
-    print("=" * 60)
-    print("Discord Bot Authorizer - Educational Use Only")
-    print("=" * 60)
+    print(r"""
+╔═══════════════════════════════════════════════════════════╗
+║                                                           ║
+║    ____        __     ___       __    __                 ║
+║   / __ )____  / /_   /   | ____/ /___/ /__  _____        ║
+║  / __  / __ \/ __/  / /| |/ __  / __  / _ \/ ___/        ║
+║ / /_/ / /_/ / /_   / ___ / /_/ / /_/ /  __/ /            ║
+║/_____/\____/\__/  /_/  |_\__,_/\__,_/\___/_/             ║
+║                                                           ║
+║                  By Kaala Tanmay                          ║
+║                                                           ║
+║         Discord Bot Authorizer - Educational Use          ║
+║                                                           ║
+╚═══════════════════════════════════════════════════════════╝
+    """)
     print(f"{ColoredOutput.ENDC}")
     
-    ColoredOutput.print_warning("⚠️  This tool is for educational purposes only!")
-    ColoredOutput.print_warning("⚠️  Use at your own risk!")
+    print(f"{ColoredOutput.WARNING}╔{'═' * 58}╗{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.WARNING}║ WARNING: This tool is for educational purposes only!     ║{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.WARNING}║ WARNING: Use at your own risk!                           ║{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.WARNING}╚{'═' * 58}╝{ColoredOutput.ENDC}")
     print()
     
     # Get user token
-    print(f"{ColoredOutput.CYAN}Enter your Discord account token:{ColoredOutput.ENDC}")
-    user_token = input("> ").strip()
+    print(f"\n{ColoredOutput.CYAN}┌{'─' * 58}┐{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.CYAN}│{ColoredOutput.ENDC} {ColoredOutput.BOLD}Enter your Discord account token:{ColoredOutput.ENDC}                  {ColoredOutput.CYAN}│{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.CYAN}└{'─' * 58}┘{ColoredOutput.ENDC}")
+    user_token = input(f"{ColoredOutput.GREEN}>> {ColoredOutput.ENDC}").strip()
     
     if not user_token:
         ColoredOutput.print_error("Token is required!")
         sys.exit(1)
     
-    # Get OAuth2 URL
-    print(f"\n{ColoredOutput.CYAN}Enter the bot OAuth2 authorization URL:{ColoredOutput.ENDC}")
-    print(f"{ColoredOutput.WARNING}Example: https://discord.com/api/oauth2/authorize?client_id=123456789&scope=bot&permissions=8{ColoredOutput.ENDC}")
-    oauth_url = input("> ").strip()
+    # Get bot client ID
+    print(f"\n{ColoredOutput.CYAN}┌{'─' * 58}┐{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.CYAN}│{ColoredOutput.ENDC} {ColoredOutput.BOLD}Enter the bot Client ID:{ColoredOutput.ENDC}                           {ColoredOutput.CYAN}│{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.CYAN}│{ColoredOutput.ENDC} {ColoredOutput.WARNING}Example: 123456789012345678{ColoredOutput.ENDC}                        {ColoredOutput.CYAN}│{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.CYAN}└{'─' * 58}┘{ColoredOutput.ENDC}")
+    client_id = input(f"{ColoredOutput.GREEN}>> {ColoredOutput.ENDC}").strip()
     
-    if not oauth_url:
-        ColoredOutput.print_error("OAuth2 URL is required!")
+    if not client_id:
+        ColoredOutput.print_error("Client ID is required!")
         sys.exit(1)
     
-    # Get guild ID
-    print(f"\n{ColoredOutput.CYAN}Enter the Guild ID (default: 283939):{ColoredOutput.ENDC}")
-    guild_id = input("> ").strip() or "283939"
-    
     # Get permissions (optional)
-    print(f"\n{ColoredOutput.CYAN}Enter permissions (default: 0 for no permissions):{ColoredOutput.ENDC}")
-    permissions = input("> ").strip() or "0"
+    print(f"\n{ColoredOutput.CYAN}┌{'─' * 58}┐{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.CYAN}│{ColoredOutput.ENDC} {ColoredOutput.BOLD}Enter permissions (default: 0):{ColoredOutput.ENDC}                    {ColoredOutput.CYAN}│{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.CYAN}│{ColoredOutput.ENDC} {ColoredOutput.WARNING}0=None | 8=Admin | 2048=Messages | 2147483647=All{ColoredOutput.ENDC}  {ColoredOutput.CYAN}│{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.CYAN}└{'─' * 58}┘{ColoredOutput.ENDC}")
+    permissions = input(f"{ColoredOutput.GREEN}>> {ColoredOutput.ENDC}").strip() or "0"
+    
+    # Ask about authorization mode
+    print(f"\n{ColoredOutput.CYAN}┌{'─' * 58}┐{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.CYAN}│{ColoredOutput.ENDC} {ColoredOutput.BOLD}Authorization Mode:{ColoredOutput.ENDC}                                 {ColoredOutput.CYAN}│{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.CYAN}│{ColoredOutput.ENDC} {ColoredOutput.WARNING}[1]{ColoredOutput.ENDC} Add bot to ALL servers (recommended)           {ColoredOutput.CYAN}│{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.CYAN}│{ColoredOutput.ENDC} {ColoredOutput.WARNING}[2]{ColoredOutput.ENDC} Add bot to a SPECIFIC server                   {ColoredOutput.CYAN}│{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.CYAN}└{'─' * 58}┘{ColoredOutput.ENDC}")
+    mode = input(f"{ColoredOutput.GREEN}>> {ColoredOutput.ENDC}").strip() or "1"
+    
+    # Get guild ID only if specific mode
+    guild_id = None
+    if mode == "2":
+        print(f"\n{ColoredOutput.CYAN}┌{'─' * 58}┐{ColoredOutput.ENDC}")
+        print(f"{ColoredOutput.CYAN}│{ColoredOutput.ENDC} {ColoredOutput.BOLD}Enter the Guild ID:{ColoredOutput.ENDC}                                 {ColoredOutput.CYAN}│{ColoredOutput.ENDC}")
+        print(f"{ColoredOutput.CYAN}└{'─' * 58}┘{ColoredOutput.ENDC}")
+        guild_id = input(f"{ColoredOutput.GREEN}>> {ColoredOutput.ENDC}").strip()
+        if not guild_id:
+            ColoredOutput.print_error("Guild ID is required for specific server mode!")
+            sys.exit(1)
     
     # Ask about LLM CAPTCHA
-    print(f"\n{ColoredOutput.CYAN}Use free LLM for CAPTCHA solving? (Y/n):{ColoredOutput.ENDC}")
-    print(f"{ColoredOutput.WARNING}LLM solver is 100% free and automatic (Termux-friendly){ColoredOutput.ENDC}")
-    use_llm = input("> ").strip().lower()
+    print(f"\n{ColoredOutput.CYAN}┌{'─' * 58}┐{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.CYAN}│{ColoredOutput.ENDC} {ColoredOutput.BOLD}Use free LLM for CAPTCHA solving? (Y/n):{ColoredOutput.ENDC}           {ColoredOutput.CYAN}│{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.CYAN}│{ColoredOutput.ENDC} {ColoredOutput.WARNING}LLM solver is 100% free and automatic{ColoredOutput.ENDC}              {ColoredOutput.CYAN}│{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.CYAN}└{'─' * 58}┘{ColoredOutput.ENDC}")
+    use_llm = input(f"{ColoredOutput.GREEN}>> {ColoredOutput.ENDC}").strip().lower()
     use_llm_captcha = use_llm != 'n'
     
     # Create authorizer
     authorizer = BotAuthorizer(user_token, use_llm_captcha=use_llm_captcha)
     
-    # Prepare options
-    options = {
-        'guild_id': guild_id,
-        'permissions': permissions,
-        'integration_type': 0
-    }
-    
     print()
+    print(f"{ColoredOutput.BLUE}{'═' * 60}{ColoredOutput.ENDC}")
     ColoredOutput.print_info("Starting authorization process...")
+    print(f"{ColoredOutput.BLUE}{'═' * 60}{ColoredOutput.ENDC}")
     
-    # Authorize the bot
-    result = authorizer.authorize_url(oauth_url, options)
-    
-    # Display results
-    print()
-    if 'error' not in result:
-        ColoredOutput.print_success("=" * 60)
-        ColoredOutput.print_success("Bot successfully added to the guild!")
-        ColoredOutput.print_success("=" * 60)
+    # Authorize based on mode
+    if mode == "1":
+        # Add to all guilds
+        result = authorizer.authorize_bot_to_all_guilds(client_id, permissions)
+        
+        # Display results
         print()
-        ColoredOutput.print_info("Response details:")
-        print(json.dumps(result, indent=2))
+        if result.get('successful', 0) > 0:
+            print(f"{ColoredOutput.GREEN}╔{'═' * 58}╗{ColoredOutput.ENDC}")
+            print(f"{ColoredOutput.GREEN}║{ColoredOutput.ENDC} {ColoredOutput.BOLD}Bot authorization completed!{ColoredOutput.ENDC}                          {ColoredOutput.GREEN}║{ColoredOutput.ENDC}")
+            print(f"{ColoredOutput.GREEN}╚{'═' * 58}╝{ColoredOutput.ENDC}")
+            print()
+            ColoredOutput.print_info("Summary:")
+            print(json.dumps({
+                'total_guilds': result.get('total', 0),
+                'successful': result.get('successful', 0),
+                'failed': result.get('failed', 0)
+            }, indent=2))
+            
+            if result.get('failed', 0) > 0:
+                ColoredOutput.print_warning("\nSome guilds failed. Check details above.")
+        else:
+            print(f"{ColoredOutput.FAIL}╔{'═' * 58}╗{ColoredOutput.ENDC}")
+            print(f"{ColoredOutput.FAIL}║{ColoredOutput.ENDC} {ColoredOutput.BOLD}Failed to add bot to any guild{ColoredOutput.ENDC}                       {ColoredOutput.FAIL}║{ColoredOutput.ENDC}")
+            print(f"{ColoredOutput.FAIL}╚{'═' * 58}╝{ColoredOutput.ENDC}")
+            sys.exit(1)
     else:
-        ColoredOutput.print_error("=" * 60)
-        ColoredOutput.print_error("Failed to add bot to guild")
-        ColoredOutput.print_error("=" * 60)
+        # Add to specific guild
+        oauth_url = authorizer.build_oauth_url(client_id, permissions)
+        options = {
+            'guild_id': guild_id,
+            'permissions': permissions,
+            'integration_type': 0
+        }
+        
+        result = authorizer.authorize_url(oauth_url, options)
+        
+        # Display results
         print()
-        ColoredOutput.print_info("Error details:")
-        print(json.dumps(result, indent=2))
-        sys.exit(1)
+        if 'error' not in result:
+            print(f"{ColoredOutput.GREEN}╔{'═' * 58}╗{ColoredOutput.ENDC}")
+            print(f"{ColoredOutput.GREEN}║{ColoredOutput.ENDC} {ColoredOutput.BOLD}Bot successfully added to the guild!{ColoredOutput.ENDC}                  {ColoredOutput.GREEN}║{ColoredOutput.ENDC}")
+            print(f"{ColoredOutput.GREEN}╚{'═' * 58}╝{ColoredOutput.ENDC}")
+            print()
+            ColoredOutput.print_info("Response details:")
+            print(json.dumps(result, indent=2))
+        else:
+            print(f"{ColoredOutput.FAIL}╔{'═' * 58}╗{ColoredOutput.ENDC}")
+            print(f"{ColoredOutput.FAIL}║{ColoredOutput.ENDC} {ColoredOutput.BOLD}Failed to add bot to guild{ColoredOutput.ENDC}                           {ColoredOutput.FAIL}║{ColoredOutput.ENDC}")
+            print(f"{ColoredOutput.FAIL}╚{'═' * 58}╝{ColoredOutput.ENDC}")
+            print()
+            ColoredOutput.print_info("Error details:")
+            print(json.dumps(result, indent=2))
+            sys.exit(1)
 
 
 if __name__ == "__main__":

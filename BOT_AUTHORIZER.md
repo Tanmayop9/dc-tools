@@ -52,25 +52,70 @@ python bot_authorizer.py
 
 The script will ask you for:
 1. **Discord Account Token** - Your user account token
-2. **OAuth2 URL** - The bot's authorization URL
-3. **Guild ID** - The guild where you want to add the bot (default: 283939)
-4. **Permissions** - Permission level for the bot (default: 0)
-5. **LLM CAPTCHA** - Whether to use free AI CAPTCHA solving (recommended: Yes)
+2. **Bot Client ID** - Just the bot's application/client ID (NOT the full OAuth URL)
+3. **Permissions** - Permission level for the bot (default: 0)
+4. **Authorization Mode** - Add bot to ALL servers or a SPECIFIC server
+5. **Guild ID** - (Only if specific server mode) The guild where you want to add the bot
+6. **LLM CAPTCHA** - Whether to use free AI CAPTCHA solving (recommended: Yes)
 
-### Example
+### Example: Add to All Servers (New Feature!)
 
 ```
 Enter your Discord account token:
 > YOUR_TOKEN_HERE
 
-Enter the bot OAuth2 authorization URL:
-> https://discord.com/api/oauth2/authorize?client_id=123456789&scope=bot&permissions=8
-
-Enter the Guild ID (default: 283939):
-> 283939
+Enter the bot Client ID:
+> 123456789012345678
 
 Enter permissions (default: 0 for no permissions):
 > 8
+
+Authorization mode:
+1. Add bot to ALL servers where you have permissions (recommended)
+2. Add bot to a SPECIFIC server
+Enter mode (1 or 2, default: 1): 
+> 1
+
+Use free LLM for CAPTCHA solving? (Y/n):
+> Y
+
+✨ Free LLM CAPTCHA solver enabled!
+[*] Starting authorization process...
+[*] Fetching your guilds...
+[✓] Found 5 guilds
+[*] Found 3 guilds with required permissions
+
+Guilds where you can add the bot:
+  1. My Server (ID: 123...)
+  2. Gaming Guild (ID: 456...)
+  3. Dev Community (ID: 789...)
+
+[1/3] Adding bot to: My Server
+[✓] Bot authorized successfully!
+[✓] ✓ Bot added to My Server
+...
+```
+
+### Example: Add to Specific Server
+
+```
+Enter your Discord account token:
+> YOUR_TOKEN_HERE
+
+Enter the bot Client ID:
+> 123456789012345678
+
+Enter permissions (default: 0 for no permissions):
+> 0
+
+Authorization mode:
+1. Add bot to ALL servers where you have permissions (recommended)
+2. Add bot to a SPECIFIC server
+Enter mode (1 or 2, default: 1): 
+> 2
+
+Enter the Guild ID:
+> 283939
 
 Use free LLM for CAPTCHA solving? (Y/n):
 > Y
@@ -86,14 +131,34 @@ Use free LLM for CAPTCHA solving? (Y/n):
 
 ## How It Works
 
-1. **Validation**: Validates the OAuth2 URL format
-2. **Parsing**: Extracts query parameters from the URL
+### Single Server Mode
+1. **Input**: Takes bot client ID and guild ID
+2. **URL Building**: Builds OAuth2 URL from client ID
 3. **Authorization**: Sends a POST request to Discord's OAuth2 endpoint
 4. **Response**: Returns the authorization result
 
-## OAuth2 URL Format
+### Multi-Server Mode (New!)
+1. **Input**: Takes bot client ID only
+2. **Guild Fetch**: Retrieves all guilds where user is a member
+3. **Filtering**: Filters guilds where user has "Manage Server" or "Administrator" permissions
+4. **URL Building**: Builds OAuth2 URL from client ID
+5. **Bulk Authorization**: Iterates through all eligible guilds and adds the bot
+6. **Summary**: Shows detailed results for each guild
 
-The script accepts OAuth2 URLs in the following format:
+## Getting Bot Client ID
+
+To use the bot authorizer, you need the bot's **Client ID** (NOT the full OAuth URL):
+
+1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
+2. Select your bot application
+3. Go to "OAuth2" section
+4. Copy the **Client ID** (a long number like `123456789012345678`)
+
+That's it! No need to copy the full OAuth URL anymore.
+
+## OAuth2 URL Format (For Reference)
+
+The script now builds OAuth2 URLs automatically from the client ID:
 
 ```
 https://discord.com/api/oauth2/authorize?client_id=BOT_ID&scope=bot&permissions=PERMISSIONS
@@ -106,13 +171,13 @@ Supported Discord domains:
 
 ## Parameters
 
-### Required Parameters (from OAuth2 URL)
-- `client_id`: The bot's application ID
-- `scope`: Authorization scope (usually "bot")
+### Required Parameters
+- `client_id`: The bot's application ID (now input directly, not in URL)
+- `scope`: Authorization scope (automatically set to "bot")
 
 ### Optional Parameters
 - `permissions`: Permission integer (default: "0")
-- `guild_id`: Target guild ID (default: "283939")
+- `guild_id`: Target guild ID (only needed for specific server mode)
 - `integration_type`: Integration type (default: 0)
 
 ## Getting Your Account Token
