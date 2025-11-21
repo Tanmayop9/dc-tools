@@ -10,21 +10,24 @@ import time
 from bot_authorizer import BotAuthorizer, ColoredOutput
 
 def example_basic_authorization():
-    """Basic example of bot authorization"""
-    ColoredOutput.print_info("Example 1: Basic Bot Authorization")
+    """Basic example of bot authorization to specific server"""
+    ColoredOutput.print_info("Example 1: Basic Bot Authorization (Specific Server)")
     ColoredOutput.print_info("=" * 50)
     
     # Your account token (⚠️ NEVER share this!)
     user_token = "<YOUR_DISCORD_TOKEN>"
     
-    # Bot OAuth2 URL (from Discord Developer Portal)
-    oauth_url = "https://discord.com/api/oauth2/authorize?client_id=<YOUR_BOT_ID>&scope=bot"
+    # Bot Client ID (from Discord Developer Portal)
+    client_id = "<YOUR_BOT_CLIENT_ID>"
     
-    # Target guild ID (default: 283939)
+    # Target guild ID
     guild_id = "283939"
     
     # Initialize the authorizer
     authorizer = BotAuthorizer(user_token)
+    
+    # Build OAuth URL from client ID
+    oauth_url = authorizer.build_oauth_url(client_id, permissions="0")
     
     # Prepare authorization options
     options = {
@@ -42,12 +45,12 @@ def example_basic_authorization():
 
 
 def example_with_permissions():
-    """Example with specific permissions"""
-    ColoredOutput.print_info("Example 2: Bot Authorization with Permissions")
+    """Example with specific permissions to all servers"""
+    ColoredOutput.print_info("Example 2: Bot Authorization to ALL Servers (NEW!)")
     ColoredOutput.print_info("=" * 50)
     
     user_token = "<YOUR_DISCORD_TOKEN>"
-    oauth_url = "https://discord.com/api/oauth2/authorize?client_id=<YOUR_BOT_ID>&scope=bot"
+    client_id = "<YOUR_BOT_CLIENT_ID>"
     
     # Common permission values:
     # 8 = Administrator
@@ -55,20 +58,16 @@ def example_with_permissions():
     # 3072 = Send Messages + Embed Links
     # 2147483647 = All permissions
     
-    options = {
-        'guild_id': '283939',
-        'permissions': '8',  # Administrator permissions
-        'integration_type': 0
-    }
+    permissions = '8'  # Administrator permissions
     
     authorizer = BotAuthorizer(user_token)
     
-    # Authorize the bot (commented out)
-    # result = authorizer.authorize_url(oauth_url, options)
-    # if 'error' not in result:
-    #     ColoredOutput.print_success("Bot added with administrator permissions!")
+    # Authorize the bot to ALL guilds where you have permissions (commented out)
+    # result = authorizer.authorize_bot_to_all_guilds(client_id, permissions)
+    # if result.get('successful', 0) > 0:
+    #     ColoredOutput.print_success(f"Bot added to {result['successful']} servers!")
     # else:
-    #     ColoredOutput.print_error(f"Failed: {result['error']}")
+    #     ColoredOutput.print_error("Failed to add bot to any server")
     
     ColoredOutput.print_warning("⚠️  Uncomment the authorization lines to actually run")
     print()
