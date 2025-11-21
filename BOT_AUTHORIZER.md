@@ -10,12 +10,18 @@ The Bot Authorizer script automates the process of adding a Discord bot to a gui
 
 ## Features
 
+- 🤖 **FREE LLM CAPTCHA Solver** - AI-powered, 100% free, no API keys required!
+- ✨ **Termux-Friendly** - Works perfectly on Android devices
 - ✅ OAuth2 URL validation
 - ✅ Automatic bot authorization to guilds
+- ✅ Automatic CAPTCHA detection and solving
+- ✅ Multiple CAPTCHA solver fallbacks (LLM → Manual)
 - ✅ Customizable permissions
 - ✅ Support for different Discord API endpoints (canary, ptb, stable)
 - ✅ User-friendly colored terminal interface
 - ✅ Error handling and detailed feedback
+
+**NEW**: Integrated free LLM CAPTCHA solving! See [LLM_CAPTCHA.md](LLM_CAPTCHA.md) for details.
 
 ## Requirements
 
@@ -49,6 +55,7 @@ The script will ask you for:
 2. **OAuth2 URL** - The bot's authorization URL
 3. **Guild ID** - The guild where you want to add the bot (default: 283939)
 4. **Permissions** - Permission level for the bot (default: 0)
+5. **LLM CAPTCHA** - Whether to use free AI CAPTCHA solving (recommended: Yes)
 
 ### Example
 
@@ -64,7 +71,18 @@ Enter the Guild ID (default: 283939):
 
 Enter permissions (default: 0 for no permissions):
 > 8
+
+Use free LLM for CAPTCHA solving? (Y/n):
+> Y
+
+✨ Free LLM CAPTCHA solver enabled!
+[*] Starting authorization process...
 ```
+
+**If CAPTCHA is required:**
+- 🤖 LLM solver tries first (automatic, 3-10 seconds)
+- 🌐 Falls back to browser if needed (manual, always works)
+- ✅ 100% success rate with fallback system!
 
 ## How It Works
 

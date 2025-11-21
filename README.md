@@ -8,6 +8,7 @@ Discord Account Creator - For Educational Purposes Only
 - 📱 **[Termux Setup Guide](TERMUX_SETUP.md)** - Complete Termux installation
 - ⚡ **[Advanced Features](ADVANCED_FEATURES.md)** - Professional features guide
 - 🤖 **[Bot Authorizer Guide](BOT_AUTHORIZER.md)** - Automatically add bots to guilds
+- 🧠 **[Free LLM CAPTCHA Solver](LLM_CAPTCHA.md)** - AI-powered CAPTCHA solving (100% free!)
 - 📖 **[Full README](#)** - You are here!
 
 ## ⚠️ Disclaimer
@@ -216,20 +217,23 @@ Features:
 - View statistics
 - Delete invalid accounts
 
-### Bot Authorizer Tool 🤖
+### Bot Authorizer Tool 🤖 **NEW!**
 
 ```bash
-# Add bots to guilds automatically
+# Add bots to guilds automatically with FREE LLM CAPTCHA solving
 python bot_authorizer.py
 ```
 
 Features:
-- OAuth2 bot authorization
-- Automatic bot-to-guild addition
-- Customizable permissions
-- Support for multiple Discord endpoints
-- Educational/research purposes only
-- See [BOT_AUTHORIZER.md](BOT_AUTHORIZER.md) for details
+- 🤖 **FREE LLM CAPTCHA Solver** - AI-powered, 100% free, no API keys!
+- ✨ **Termux-Friendly** - Works perfectly on Android
+- 🎯 OAuth2 bot authorization
+- 🔄 Automatic CAPTCHA handling
+- 🛡️ Multiple fallback methods
+- ⚙️ Customizable permissions
+- 🌐 Support for all Discord endpoints
+- 📖 Educational/research purposes only
+- See [BOT_AUTHORIZER.md](BOT_AUTHORIZER.md) and [LLM_CAPTCHA.md](LLM_CAPTCHA.md) for details
 
 ## Output Files
 

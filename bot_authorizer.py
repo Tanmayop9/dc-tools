@@ -12,8 +12,22 @@ import requests
 import json
 import re
 import sys
+import time
 from urllib.parse import urlparse, parse_qs
 from typing import Optional, Dict
+
+# Import free CAPTCHA solvers
+try:
+    from captcha_solver_llm import LLMCaptchaSolver
+    LLM_CAPTCHA_AVAILABLE = True
+except ImportError:
+    LLM_CAPTCHA_AVAILABLE = False
+
+try:
+    from captcha_solver_free import FreeCaptchaSolver
+    FREE_CAPTCHA_AVAILABLE = True
+except ImportError:
+    FREE_CAPTCHA_AVAILABLE = False
 
 class ColoredOutput:
     """ANSI color codes for terminal output"""
@@ -44,23 +58,38 @@ class ColoredOutput:
 
 
 class BotAuthorizer:
-    """Handles Discord bot OAuth2 authorization"""
+    """Handles Discord bot OAuth2 authorization with free LLM CAPTCHA solving"""
     
-    def __init__(self, user_token: str):
+    def __init__(self, user_token: str, use_llm_captcha: bool = True):
         """
         Initialize the bot authorizer
         
         Args:
             user_token: Discord user account token
+            use_llm_captcha: Use free LLM for CAPTCHA solving (default: True)
         """
         self.user_token = user_token
         self.api_base = "https://discord.com/api/v9"
+        self.use_llm_captcha = use_llm_captcha
         self.session = requests.Session()
         self.session.headers.update({
             'Authorization': user_token,
             'Content-Type': 'application/json',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         })
+        
+        # Initialize CAPTCHA solvers
+        self.llm_solver = None
+        self.manual_solver = None
+        
+        if use_llm_captcha and LLM_CAPTCHA_AVAILABLE:
+            ColoredOutput.print_success("✨ Free LLM CAPTCHA solver enabled!")
+            self.llm_solver = LLMCaptchaSolver()
+        elif FREE_CAPTCHA_AVAILABLE:
+            ColoredOutput.print_info("Using manual CAPTCHA solver (browser-based)")
+            self.manual_solver = FreeCaptchaSolver()
+        else:
+            ColoredOutput.print_warning("No CAPTCHA solver available")
     
     def validate_oauth_url(self, oauth_url: str) -> bool:
         """
@@ -134,14 +163,95 @@ class BotAuthorizer:
             if response.status_code == 200:
                 ColoredOutput.print_success("Bot authorized successfully!")
                 return response.json()
-            else:
-                ColoredOutput.print_error(f"Authorization failed: {response.status_code}")
-                ColoredOutput.print_error(f"Response: {response.text}")
-                return {'error': response.text, 'status_code': response.status_code}
+            
+            # Check if CAPTCHA is required
+            elif response.status_code == 400:
+                try:
+                    error_data = response.json()
+                    if 'captcha_key' in error_data or 'captcha_sitekey' in error_data:
+                        ColoredOutput.print_warning("CAPTCHA required! Attempting to solve...")
+                        
+                        captcha_sitekey = error_data.get('captcha_sitekey', [''])[0] if isinstance(error_data.get('captcha_sitekey'), list) else error_data.get('captcha_sitekey', '')
+                        captcha_service = error_data.get('captcha_service', 'hcaptcha')
+                        
+                        ColoredOutput.print_info(f"CAPTCHA service: {captcha_service}")
+                        ColoredOutput.print_info(f"Site key: {captcha_sitekey}")
+                        
+                        # Try to solve CAPTCHA
+                        captcha_solution = self._solve_captcha(captcha_sitekey, oauth_url, captcha_service)
+                        
+                        if captcha_solution:
+                            ColoredOutput.print_success("CAPTCHA solved! Retrying authorization...")
+                            
+                            # Add CAPTCHA solution to options
+                            final_options['captcha_key'] = captcha_solution
+                            
+                            # Retry with CAPTCHA solution
+                            response = self.session.post(
+                                api_url,
+                                params=query_only,
+                                json=final_options
+                            )
+                            
+                            if response.status_code == 200:
+                                ColoredOutput.print_success("Bot authorized successfully (with CAPTCHA)!")
+                                return response.json()
+                            else:
+                                ColoredOutput.print_error(f"Authorization failed even with CAPTCHA: {response.status_code}")
+                                return {'error': response.text, 'status_code': response.status_code}
+                        else:
+                            ColoredOutput.print_error("Failed to solve CAPTCHA")
+                            return {'error': 'CAPTCHA solving failed', 'status_code': 400}
+                except:
+                    pass
+            
+            ColoredOutput.print_error(f"Authorization failed: {response.status_code}")
+            ColoredOutput.print_error(f"Response: {response.text}")
+            return {'error': response.text, 'status_code': response.status_code}
                 
         except Exception as e:
             ColoredOutput.print_error(f"Request failed: {str(e)}")
             return {'error': str(e)}
+    
+    def _solve_captcha(self, sitekey: str, url: str, service: str = 'hcaptcha') -> Optional[str]:
+        """
+        Solve CAPTCHA using available methods
+        
+        Args:
+            sitekey: CAPTCHA site key
+            url: Page URL
+            service: CAPTCHA service type (hcaptcha, recaptcha)
+            
+        Returns:
+            CAPTCHA solution token or None
+        """
+        ColoredOutput.print_info(f"Attempting to solve {service} CAPTCHA...")
+        
+        # Try LLM solver first (free, automatic)
+        if self.llm_solver and self.use_llm_captcha:
+            ColoredOutput.print_info("🤖 Using free LLM CAPTCHA solver...")
+            try:
+                solution = self.llm_solver.solve_hcaptcha(sitekey, url)
+                if solution:
+                    return solution
+                else:
+                    ColoredOutput.print_warning("LLM solver couldn't solve, trying fallback...")
+            except Exception as e:
+                ColoredOutput.print_warning(f"LLM solver error: {str(e)}")
+        
+        # Fallback to manual solver (browser-based, free)
+        if self.manual_solver:
+            ColoredOutput.print_info("🌐 Opening browser for manual CAPTCHA solving...")
+            ColoredOutput.print_warning("Please solve the CAPTCHA in your browser")
+            try:
+                solution = self.manual_solver.solve_captcha(sitekey, url)
+                return solution
+            except Exception as e:
+                ColoredOutput.print_error(f"Manual solver error: {str(e)}")
+        
+        # No solver available
+        ColoredOutput.print_error("No CAPTCHA solver available!")
+        return None
 
 
 def main():
@@ -181,8 +291,14 @@ def main():
     print(f"\n{ColoredOutput.CYAN}Enter permissions (default: 0 for no permissions):{ColoredOutput.ENDC}")
     permissions = input("> ").strip() or "0"
     
+    # Ask about LLM CAPTCHA
+    print(f"\n{ColoredOutput.CYAN}Use free LLM for CAPTCHA solving? (Y/n):{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.WARNING}LLM solver is 100% free and automatic (Termux-friendly){ColoredOutput.ENDC}")
+    use_llm = input("> ").strip().lower()
+    use_llm_captcha = use_llm != 'n'
+    
     # Create authorizer
-    authorizer = BotAuthorizer(user_token)
+    authorizer = BotAuthorizer(user_token, use_llm_captcha=use_llm_captcha)
     
     # Prepare options
     options = {
