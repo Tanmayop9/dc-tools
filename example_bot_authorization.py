@@ -6,6 +6,7 @@ This demonstrates how to use the BotAuthorizer class in your own scripts.
 ⚠️ For educational purposes only!
 """
 
+import time
 from bot_authorizer import BotAuthorizer, ColoredOutput
 
 def example_basic_authorization():
