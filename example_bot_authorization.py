@@ -15,10 +15,10 @@ def example_basic_authorization():
     ColoredOutput.print_info("=" * 50)
     
     # Your account token (⚠️ NEVER share this!)
-    user_token = "YOUR_DISCORD_TOKEN_HERE"
+    user_token = "<YOUR_DISCORD_TOKEN>"
     
     # Bot OAuth2 URL (from Discord Developer Portal)
-    oauth_url = "https://discord.com/api/oauth2/authorize?client_id=YOUR_BOT_ID&scope=bot"
+    oauth_url = "https://discord.com/api/oauth2/authorize?client_id=<YOUR_BOT_ID>&scope=bot"
     
     # Target guild ID (default: 283939)
     guild_id = "283939"
@@ -46,8 +46,8 @@ def example_with_permissions():
     ColoredOutput.print_info("Example 2: Bot Authorization with Permissions")
     ColoredOutput.print_info("=" * 50)
     
-    user_token = "YOUR_DISCORD_TOKEN_HERE"
-    oauth_url = "https://discord.com/api/oauth2/authorize?client_id=YOUR_BOT_ID&scope=bot"
+    user_token = "<YOUR_DISCORD_TOKEN>"
+    oauth_url = "https://discord.com/api/oauth2/authorize?client_id=<YOUR_BOT_ID>&scope=bot"
     
     # Common permission values:
     # 8 = Administrator
@@ -79,7 +79,7 @@ def example_multiple_bots():
     ColoredOutput.print_info("Example 3: Adding Multiple Bots")
     ColoredOutput.print_info("=" * 50)
     
-    user_token = "YOUR_DISCORD_TOKEN_HERE"
+    user_token = "<YOUR_DISCORD_TOKEN>"
     guild_id = "283939"
     
     # List of bot OAuth2 URLs
@@ -121,8 +121,8 @@ def example_error_handling():
     ColoredOutput.print_info("Example 4: Bot Authorization with Error Handling")
     ColoredOutput.print_info("=" * 50)
     
-    user_token = "YOUR_DISCORD_TOKEN_HERE"
-    oauth_url = "https://discord.com/api/oauth2/authorize?client_id=YOUR_BOT_ID&scope=bot"
+    user_token = "<YOUR_DISCORD_TOKEN>"
+    oauth_url = "https://discord.com/api/oauth2/authorize?client_id=<YOUR_BOT_ID>&scope=bot"
     
     try:
         authorizer = BotAuthorizer(user_token)

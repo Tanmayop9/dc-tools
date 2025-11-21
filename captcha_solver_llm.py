@@ -47,11 +47,19 @@ class LLMCaptchaSolver:
     Supports multiple providers with automatic fallback
     """
     
-    def __init__(self):
-        """Initialize the LLM CAPTCHA solver"""
+    # Default User-Agent (can be customized)
+    DEFAULT_USER_AGENT = 'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
+    
+    def __init__(self, user_agent: str = None):
+        """
+        Initialize the LLM CAPTCHA solver
+        
+        Args:
+            user_agent: Custom User-Agent string (optional)
+        """
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
+            'User-Agent': user_agent or self.DEFAULT_USER_AGENT
         })
         
         # Free LLM API endpoints (no API key required)
@@ -225,13 +233,19 @@ class LLMCaptchaSolver:
     
     def _extract_captcha_from_caption(self, caption: str) -> Optional[str]:
         """
-        Extract CAPTCHA text from image caption
+        Extract CAPTCHA text from image caption using pattern matching
+        
+        This method analyzes the LLM-generated caption to find CAPTCHA text.
+        It uses regex patterns to identify common CAPTCHA formats:
+        - 4-8 character alphanumeric codes (e.g., "ABC123")
+        - 4-6 digit numeric codes (e.g., "1234")
+        - 4-8 letter sequences (e.g., "ABCDEF")
         
         Args:
-            caption: Image caption from LLM
+            caption: Image caption from LLM (e.g., "a sign with text ABC123")
             
         Returns:
-            Extracted text or None
+            Extracted CAPTCHA text or None if no pattern matches
         """
         import re
         

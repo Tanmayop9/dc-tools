@@ -66,7 +66,9 @@ class BotAuthorizer:
         
         Args:
             user_token: Discord user account token
-            use_llm_captcha: Use free LLM for CAPTCHA solving (default: True)
+            use_llm_captcha: Use free LLM for CAPTCHA solving (default: True).
+                           If False, uses manual browser-based solving only.
+                           LLM is faster and automatic, manual is 100% reliable.
         """
         self.user_token = user_token
         self.api_base = "https://discord.com/api/v9"

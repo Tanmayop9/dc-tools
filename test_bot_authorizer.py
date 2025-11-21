@@ -25,7 +25,7 @@ def test_oauth_url_validation():
     
     # Invalid URLs
     invalid_urls = [
-        "http://discord.com/api/oauth2/authorize?client_id=123",  # http instead of https
+        "http://discord.com/api/oauth2/authorize?client_id=123",  # HTTP instead of HTTPS
         "https://example.com/oauth2/authorize?client_id=123",  # wrong domain
         "https://discord.com/api/oauth2/invite?client_id=123",  # wrong path
         "https://discord.com/oauth2?client_id=123",  # missing /authorize
