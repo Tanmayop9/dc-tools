@@ -235,11 +235,15 @@ class BotAuthorizer:
                         captcha_sitekey = error_data.get('captcha_sitekey', [''])[0] if isinstance(error_data.get('captcha_sitekey'), list) else error_data.get('captcha_sitekey', '')
                         captcha_service = error_data.get('captcha_service', 'hcaptcha')
                         captcha_rqtoken = error_data.get('captcha_rqtoken', '')
+                        captcha_rqdata = error_data.get('captcha_rqdata', '')
+                        captcha_session_id = error_data.get('captcha_session_id', '')
                         
                         ColoredOutput.print_info(f"CAPTCHA service: {captcha_service}")
                         ColoredOutput.print_info(f"Site key: {captcha_sitekey}")
                         if captcha_rqtoken:
                             ColoredOutput.print_info(f"RQToken: {captcha_rqtoken[:20]}...")
+                        if captcha_session_id:
+                            ColoredOutput.print_info(f"Session ID: {captcha_session_id}")
                         
                         # Try to solve CAPTCHA
                         captcha_solution = self._solve_captcha(captcha_sitekey, oauth_url, captcha_service)
@@ -247,10 +251,17 @@ class BotAuthorizer:
                         if captcha_solution:
                             ColoredOutput.print_success("CAPTCHA solved! Retrying authorization...")
                             
-                            # Add CAPTCHA solution to options - must be list format for Discord API
+                            # Add CAPTCHA solution to options
                             final_options['captcha_key'] = captcha_solution
+                            # Include all CAPTCHA-related fields from Discord's response
+                            # These fields are required by Discord API to validate the CAPTCHA solution
+                            # Missing any of these fields will result in "invalid-response" error
                             if captcha_rqtoken:
                                 final_options['captcha_rqtoken'] = captcha_rqtoken
+                            if captcha_rqdata:
+                                final_options['captcha_rqdata'] = captcha_rqdata
+                            if captcha_session_id:
+                                final_options['captcha_session_id'] = captcha_session_id
                             
                             # Log the retry attempt for debugging
                             ColoredOutput.print_info("Retrying authorization with CAPTCHA solution...")
