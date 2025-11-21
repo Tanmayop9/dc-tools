@@ -342,9 +342,13 @@ class BotAuthorizer:
         print(f"{ColoredOutput.CYAN}║{ColoredOutput.ENDC} {ColoredOutput.BOLD}Guilds where you can add the bot:{ColoredOutput.ENDC}                    {ColoredOutput.CYAN}║{ColoredOutput.ENDC}")
         print(f"{ColoredOutput.CYAN}╠{'═' * 58}╣{ColoredOutput.ENDC}")
         for i, guild in enumerate(manageable_guilds, 1):
-            guild_name = guild.get('name', 'Unknown')[:40]  # Truncate long names
+            guild_name = guild.get('name', 'Unknown')
+            # Safely truncate guild name to fit in 40 characters, handling Unicode
+            if len(guild_name) > 40:
+                guild_name = guild_name[:37] + '...'
             guild_id = guild.get('id', 'Unknown')
-            print(f"{ColoredOutput.CYAN}║{ColoredOutput.ENDC} {ColoredOutput.WARNING}[{i}]{ColoredOutput.ENDC} {guild_name:<40} {ColoredOutput.CYAN}║{ColoredOutput.ENDC}")
+            # Use ljust for better Unicode handling
+            print(f"{ColoredOutput.CYAN}║{ColoredOutput.ENDC} {ColoredOutput.WARNING}[{i}]{ColoredOutput.ENDC} {guild_name.ljust(40)} {ColoredOutput.CYAN}║{ColoredOutput.ENDC}")
         print(f"{ColoredOutput.CYAN}╚{'═' * 58}╝{ColoredOutput.ENDC}")
         
         print()
@@ -389,7 +393,8 @@ class BotAuthorizer:
                     'error': result.get('error', 'Unknown error')
                 })
             
-            # Rate limiting - wait between requests
+            # Rate limiting - wait between requests to avoid Discord API rate limits
+            # Discord typically allows around 5 requests per second, so 2 seconds is conservative
             if i < len(manageable_guilds):
                 time.sleep(2)
         

@@ -153,9 +153,9 @@ def main():
     total = len(results)
     
     for test_name, result in results:
-        status = "[+] PASSED" if result else "[-] FAILED"
+        status = "PASSED" if result else "FAILED"
         color = ColoredOutput.GREEN if result else ColoredOutput.FAIL
-        print(f"{color}{status}{ColoredOutput.ENDC} - {test_name}")
+        print(f"{color}[{status}]{ColoredOutput.ENDC} - {test_name}")
     
     print()
     print(f"Total: {passed}/{total} tests passed")
