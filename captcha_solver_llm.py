@@ -13,6 +13,8 @@ import json
 import base64
 import time
 import io
+import re
+import traceback
 from typing import Optional, Dict, Any
 from pathlib import Path
 
@@ -297,9 +299,16 @@ class LLMCaptchaSolver:
             ColoredOutput.print_info("Attempting advanced OCR pattern recognition...")
             
             # Try using pytesseract with multiple preprocessing strategies
+            # Import PIL components inside try block since they're optional dependencies
             try:
                 import pytesseract
                 from PIL import Image, ImageEnhance, ImageFilter
+            except ImportError:
+                ColoredOutput.print_info("pytesseract/PIL not installed (pip install pytesseract pillow)")
+                ColoredOutput.print_info("For better results, install: apt-get install tesseract-ocr")
+                return None
+            
+            try:
                 
                 image = Image.open(io.BytesIO(image_bytes))
                 
@@ -346,9 +355,6 @@ class LLMCaptchaSolver:
                 
                 ColoredOutput.print_warning("OCR failed to extract valid CAPTCHA text")
                     
-            except ImportError:
-                ColoredOutput.print_info("pytesseract not installed (pip install pytesseract)")
-                ColoredOutput.print_info("For better results, install: apt-get install tesseract-ocr")
             except Exception as ocr_error:
                 ColoredOutput.print_warning(f"OCR error: {str(ocr_error)}")
             
@@ -374,8 +380,6 @@ class LLMCaptchaSolver:
         Returns:
             Extracted CAPTCHA text or None if no pattern matches
         """
-        import re
-        
         ColoredOutput.print_info(f"Analyzing caption: '{caption}'")
         
         # Strategy 1: Direct extraction of quoted text (e.g., "text reads 'ABC123'")
@@ -585,7 +589,6 @@ class LLMCaptchaSolver:
             
         except Exception as e:
             ColoredOutput.print_error(f"hCaptcha solve error: {str(e)}")
-            import traceback
             ColoredOutput.print_warning(f"Traceback: {traceback.format_exc()[:200]}...")
             return None
     
@@ -741,8 +744,6 @@ class LLMCaptchaSolver:
         Returns:
             Target object name
         """
-        import re
-        
         # Common patterns in hCaptcha questions
         patterns = [
             r'select all (?:images )?(?:with|containing) (?:a |an |the )?(.+)',
