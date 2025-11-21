@@ -7,6 +7,7 @@ Discord Account Creator - For Educational Purposes Only
 - 🚀 **[Quick Start Guide](QUICKSTART.md)** - Get your first account in 5 minutes!
 - 📱 **[Termux Setup Guide](TERMUX_SETUP.md)** - Complete Termux installation
 - ⚡ **[Advanced Features](ADVANCED_FEATURES.md)** - Professional features guide
+- 🤖 **[Bot Authorizer Guide](BOT_AUTHORIZER.md)** - Automatically add bots to guilds
 - 📖 **[Full README](#)** - You are here!
 
 ## ⚠️ Disclaimer
@@ -214,6 +215,21 @@ Features:
 - Export to various formats
 - View statistics
 - Delete invalid accounts
+
+### Bot Authorizer Tool 🤖
+
+```bash
+# Add bots to guilds automatically
+python bot_authorizer.py
+```
+
+Features:
+- OAuth2 bot authorization
+- Automatic bot-to-guild addition
+- Customizable permissions
+- Support for multiple Discord endpoints
+- Educational/research purposes only
+- See [BOT_AUTHORIZER.md](BOT_AUTHORIZER.md) for details
 
 ## Output Files
 
