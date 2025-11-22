@@ -655,6 +655,40 @@ class BotAuthorizer:
             'total_time': total_time,
             'average_time': avg_time
         }
+    
+    def print_performance_stats(self):
+        """Print comprehensive performance statistics"""
+        print()
+        print(f"{ColoredOutput.CYAN}{'═' * 60}{ColoredOutput.ENDC}")
+        print(f"{ColoredOutput.BOLD}{ColoredOutput.CYAN}         PERFORMANCE STATISTICS{ColoredOutput.ENDC}")
+        print(f"{ColoredOutput.CYAN}{'═' * 60}{ColoredOutput.ENDC}")
+        
+        total_time = time.time() - self.metrics['start_time']
+        
+        ColoredOutput.print_info(f"Total runtime: {total_time:.2f}s")
+        ColoredOutput.print_info(f"Total authorization attempts: {self.metrics['total_attempts']}")
+        ColoredOutput.print_success(f"Successful authorizations: {self.metrics['successful']}")
+        ColoredOutput.print_error(f"Failed authorizations: {self.metrics['failed']}")
+        ColoredOutput.print_info(f"CAPTCHAs solved: {self.metrics['captcha_solved']}")
+        
+        if self.metrics['total_attempts'] > 0:
+            success_rate = (self.metrics['successful'] / self.metrics['total_attempts']) * 100
+            ColoredOutput.print_success(f"Success rate: {success_rate:.1f}%")
+        
+        if self.metrics['guild_times']:
+            avg_time = sum(self.metrics['guild_times']) / len(self.metrics['guild_times'])
+            min_time = min(self.metrics['guild_times'])
+            max_time = max(self.metrics['guild_times'])
+            ColoredOutput.print_info(f"Average time per guild: {avg_time:.2f}s")
+            ColoredOutput.print_info(f"Fastest guild: {min_time:.2f}s")
+            ColoredOutput.print_info(f"Slowest guild: {max_time:.2f}s")
+        
+        # Print CAPTCHA solver stats if available
+        if self.captcha_solver and hasattr(self.captcha_solver, 'print_stats'):
+            print()
+            self.captcha_solver.print_stats()
+        
+        print(f"{ColoredOutput.CYAN}{'═' * 60}{ColoredOutput.ENDC}")
 
 
 def main():
@@ -817,41 +851,6 @@ def main():
             ColoredOutput.print_info("Error details:")
             print(json.dumps(result, indent=2))
             sys.exit(1)
-
-
-    def print_performance_stats(self):
-        """Print comprehensive performance statistics"""
-        print()
-        print(f"{ColoredOutput.CYAN}{'═' * 60}{ColoredOutput.ENDC}")
-        print(f"{ColoredOutput.BOLD}{ColoredOutput.CYAN}         PERFORMANCE STATISTICS{ColoredOutput.ENDC}")
-        print(f"{ColoredOutput.CYAN}{'═' * 60}{ColoredOutput.ENDC}")
-        
-        total_time = time.time() - self.metrics['start_time']
-        
-        ColoredOutput.print_info(f"Total runtime: {total_time:.2f}s")
-        ColoredOutput.print_info(f"Total authorization attempts: {self.metrics['total_attempts']}")
-        ColoredOutput.print_success(f"Successful authorizations: {self.metrics['successful']}")
-        ColoredOutput.print_error(f"Failed authorizations: {self.metrics['failed']}")
-        ColoredOutput.print_info(f"CAPTCHAs solved: {self.metrics['captcha_solved']}")
-        
-        if self.metrics['total_attempts'] > 0:
-            success_rate = (self.metrics['successful'] / self.metrics['total_attempts']) * 100
-            ColoredOutput.print_success(f"Success rate: {success_rate:.1f}%")
-        
-        if self.metrics['guild_times']:
-            avg_time = sum(self.metrics['guild_times']) / len(self.metrics['guild_times'])
-            min_time = min(self.metrics['guild_times'])
-            max_time = max(self.metrics['guild_times'])
-            ColoredOutput.print_info(f"Average time per guild: {avg_time:.2f}s")
-            ColoredOutput.print_info(f"Fastest guild: {min_time:.2f}s")
-            ColoredOutput.print_info(f"Slowest guild: {max_time:.2f}s")
-        
-        # Print CAPTCHA solver stats if available
-        if self.captcha_solver and hasattr(self.captcha_solver, 'print_stats'):
-            print()
-            self.captcha_solver.print_stats()
-        
-        print(f"{ColoredOutput.CYAN}{'═' * 60}{ColoredOutput.ENDC}")
 
 
 if __name__ == "__main__":
