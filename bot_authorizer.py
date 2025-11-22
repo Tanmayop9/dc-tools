@@ -24,8 +24,6 @@ import json
 import re
 import sys
 import time
-import asyncio
-import aiohttp
 from urllib.parse import urlparse, parse_qs
 from typing import Optional, Dict, List, Tuple
 from concurrent.futures import ThreadPoolExecutor, as_completed

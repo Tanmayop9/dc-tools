@@ -20,13 +20,10 @@ import base64
 import time
 import io
 import re
-import traceback
-import asyncio
 import hashlib
 from typing import Optional, Dict, Any, List, Tuple
 from pathlib import Path
 from urllib.parse import urlparse
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 class ColoredOutput:
     """ANSI color codes for terminal output"""
