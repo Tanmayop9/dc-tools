@@ -57,13 +57,15 @@ class UltraAdvancedCaptchaSolver:
     Combines multiple free methods with intelligent fallback chain
     """
     
-    def __init__(self, cache_dir: str = "/tmp/captcha_cache"):
+    def __init__(self, cache_dir: str = None):
         """
         Initialize the ultra advanced CAPTCHA solver
         
         Args:
-            cache_dir: Directory for caching solved CAPTCHAs
+            cache_dir: Directory for caching solved CAPTCHAs (default: ~/captcha_cache)
         """
+        if cache_dir is None:
+            cache_dir = str(Path.home() / 'captcha_cache')
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
