@@ -57,7 +57,7 @@ class UltraAdvancedCaptchaSolver:
     Combines multiple free methods with intelligent fallback chain
     """
     
-    def __init__(self, cache_dir: str = None):
+    def __init__(self, cache_dir: Optional[str] = None):
         """
         Initialize the ultra advanced CAPTCHA solver
         
