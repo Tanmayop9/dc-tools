@@ -445,7 +445,11 @@ class UltraAdvancedCaptchaSolver:
         return None
     
     def _solve_with_hf_clip(self, image_bytes: bytes, **kwargs) -> Optional[str]:
-        """Solve using HuggingFace CLIP with text prompts"""
+        """Solve using HuggingFace CLIP with text prompts
+        
+        Note: CLIP is primarily for image classification. This method serves as a
+        framework for future implementation with candidate text matching.
+        """
         try:
             ColoredOutput.print_info("Trying HuggingFace CLIP...")
             
@@ -461,7 +465,9 @@ class UltraAdvancedCaptchaSolver:
                 result = response.json()
                 if result:
                     ColoredOutput.print_info(f"CLIP analysis complete")
-                    # CLIP returns classification, would need custom logic for text extraction
+                    # TODO: Implement custom logic for text extraction
+                    # CLIP returns classification scores, would need to compare
+                    # image against candidate alphanumeric strings
         
         except Exception as e:
             ColoredOutput.print_warning(f"CLIP solver failed: {str(e)}")
@@ -757,7 +763,11 @@ class UltraAdvancedCaptchaSolver:
         return None
     
     def _solve_with_ml_characters(self, image_bytes: bytes, **kwargs) -> Optional[str]:
-        """Solve using ML-based character recognition"""
+        """Solve using ML-based character recognition
+        
+        Note: This is a framework method for custom ML model integration.
+        Users can implement their own models here.
+        """
         try:
             from PIL import Image
             import numpy as np
@@ -768,14 +778,19 @@ class UltraAdvancedCaptchaSolver:
             image = Image.open(io.BytesIO(image_bytes))
             image_np = np.array(image.convert('L'))
             
-            # This would use a pre-trained CNN model for character recognition
-            # Placeholder for actual ML model implementation
-            # Could use models like:
-            # - Custom trained CNN on CAPTCHA datasets
-            # - Transfer learning from MNIST/EMNIST
-            # - Character segmentation + individual recognition
+            # TODO: Implement ML model loading and inference
+            # Framework for custom ML model implementation:
+            # 1. Load pre-trained CNN model (custom trained on CAPTCHA datasets)
+            # 2. Use transfer learning from MNIST/EMNIST
+            # 3. Implement character segmentation + individual recognition
+            # 4. Try ensemble methods with multiple models
+            #
+            # Example implementation:
+            # if hasattr(self, '_ml_model'):
+            #     predictions = self._ml_model.predict(image_np)
+            #     return self._decode_predictions(predictions)
             
-            ColoredOutput.print_info("ML character recognition analysis complete (no model loaded)")
+            ColoredOutput.print_info("ML character recognition - no custom model loaded")
         
         except Exception as e:
             ColoredOutput.print_warning(f"ML character recognition failed: {str(e)}")
