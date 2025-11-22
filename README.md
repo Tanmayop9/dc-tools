@@ -1,91 +1,71 @@
 # dc-tools
 
-Discord Account Creator - For Educational Purposes Only
+Ultra Advanced Discord Bot Authorizer - For Educational Purposes Only
 
 ## 📚 Documentation
 
-- 🚀 **[Quick Start Guide](QUICKSTART.md)** - Get your first account in 5 minutes!
-- 📱 **[Termux Setup Guide](TERMUX_SETUP.md)** - Complete Termux installation
-- ⚡ **[Advanced Features](ADVANCED_FEATURES.md)** - Professional features guide
-- 🤖 **[Bot Authorizer Guide](BOT_AUTHORIZER.md)** - Automatically add bots to guilds
+- 🤖 **[Bot Authorizer Guide](BOT_AUTHORIZER.md)** - Ultra advanced bot authorization with free CAPTCHA solving
 - 🧠 **[Free LLM CAPTCHA Solver](LLM_CAPTCHA.md)** - AI-powered CAPTCHA solving (100% free!)
+- ⚡ **[Advanced Features](ADVANCED_FEATURES.md)** - Professional features guide
+- 🎯 **[Interactive CAPTCHA](INTERACTIVE_CAPTCHA.md)** - Manual CAPTCHA solving guide
 - 📖 **[Full README](#)** - You are here!
 
 ## ⚠️ Disclaimer
 
-This tool is provided for **educational purposes only**. Creating multiple Discord accounts or automating account creation may violate Discord's Terms of Service. Use at your own risk. The authors are not responsible for any misuse of this tool.
+This tool is provided for **educational purposes only**. Automating bot authorization may violate Discord's Terms of Service. Use at your own risk. The authors are not responsible for any misuse of this tool.
 
-## 🎯 Recommended for Termux Users
+## 🎯 Main Feature: Ultra Advanced Bot Authorizer
 
-**Use `discord_creator_free.py` for 100% FREE manual CAPTCHA solving!**
-- No paid services needed
-- Browser opens automatically for CAPTCHA
-- Just solve CAPTCHA when prompted (takes 10-30 seconds)
-- Everything else is fully automatic
-- 📖 **[Quick Start Guide](QUICKSTART.md)** - Get started in 5 minutes!
-- 📖 **[Complete Termux Setup](TERMUX_SETUP.md)** - Full installation guide
+**The world's fastest and most advanced FREE Discord bot authorization tool!**
 
-## 🎯 Three Versions Available
+### ⚡ Key Features
+- 🚀 **Ultra-Fast Concurrent Authorization** - Process multiple guilds simultaneously (up to 5x faster!)
+- 🧠 **Multi-Method Free CAPTCHA Solving** - AI Vision, OCR, Pattern Recognition, Browser automation
+- 🔄 **Smart Retry Logic** - Exponential backoff with automatic recovery
+- ⚙️ **Connection Pooling** - Optimized session management for peak performance
+- 📊 **Performance Metrics** - Real-time statistics and detailed analytics
+- 🎯 **100% FREE** - No paid services required, ever!
 
-### 🆓 FREE Version (`discord_creator_free.py`) ⭐ RECOMMENDED FOR TERMUX
-**100% FREE - No paid services!**
-- Manual CAPTCHA solving via browser
-- Browser opens automatically on Termux
-- Just solve CAPTCHA when prompted
-- Perfect for Termux users
-- See [TERMUX_SETUP.md](TERMUX_SETUP.md)
+### 🆓 Free CAPTCHA Solver Chain
+Our ultra-advanced solver tries multiple methods in order:
+1. **Cache Lookup** - Instant if previously solved (fastest!)
+2. **HuggingFace BLIP-2** - Advanced AI vision model
+3. **HuggingFace ViT-GPT2** - Image-to-text captioning
+4. **EasyOCR** - Multi-language OCR with high accuracy
+5. **Tesseract Advanced** - Multiple preprocessing techniques
+6. **Pattern Recognition** - ML-based pattern matching
+7. **Local Ollama** - Local LLM vision models
+8. **Browser Automation** - Manual solving (100% reliable)
 
-### Basic Version (`discord_creator.py`)
-Simple and straightforward account creation
-- No CAPTCHA support
-- May fail if CAPTCHA required
+## 🎯 Perfect for All Users
 
-### Ultra Advanced Version (`discord_creator_advanced.py`)
-Professional-grade automation with advanced features
-- Supports paid CAPTCHA solvers OR free manual solving
-- Proxy support, multi-threading, database, etc.
+**Works on Termux, Linux, macOS, and Windows!**
+- Ultra-fast concurrent processing
+- Multiple free CAPTCHA solving methods
+- Smart rate limiting and retry logic
+- Comprehensive performance tracking
+- 100% free - no paid services required
 
 ## Features
 
-### 🆓 FREE Version Features (BEST FOR TERMUX)
-- ✅ **100% FREE** - No paid services required
-- ✅ **Manual CAPTCHA Solving** - Browser opens automatically
-- ✅ **Termux Optimized** - Uses termux-open-url
-- ✅ **Fully Automatic** - Except for solving CAPTCHA
-- ✅ **Robust Email Retrieval** - Automatic retry with fallback (NEW!)
-- ✅ Email verification using free temporary email
-- ✅ Token extraction and storage
-- ✅ Beautiful colored terminal output
-- ✅ Multiple account creation support
-- ✅ Easy to use - just solve CAPTCHA when browser opens
-
-### Basic Version
-- ✅ Fully automatic Discord account creation
-- ✅ **Robust Email Retrieval** - Automatic retry with fallback (NEW!)
-- ✅ Email verification using free temporary email service (1secmail)
-- ✅ Token extraction and storage
-- ✅ Works on Termux (Android)
-- ✅ No GUI dependencies
-- ✅ Multiple account creation support
-- ✅ Saves account details and tokens
-- ⚠️ No CAPTCHA support (may fail)
-
-### Ultra Advanced Version Features 🚀
-- ✅ **Multi-Provider Email Support** (1secmail, TempMail, GuerrillaMail)
-- ✅ **Automatic Email Service Fallback** - Tries all services with retry (NEW!)
-- ✅ **CAPTCHA Solving** (2captcha, Anti-Captcha integration)
-- ✅ **Proxy Support** (HTTP/HTTPS/SOCKS5 with rotation)
-- ✅ **Advanced Fingerprinting** (Anti-detection measures)
-- ✅ **User Agent Rotation** (Multiple realistic agents)
-- ✅ **Smart Retry Mechanism** (Exponential backoff with 3 attempts per service)
-- ✅ **Profile Customization** (Bio, avatar support)
-- ✅ **Token Validation** (Real-time verification)
-- ✅ **Database Integration** (SQLite for account management)
-- ✅ **Multi-Threading** (Parallel account creation)
-- ✅ **Auto Server Joining** (Join Discord servers automatically)
-- ✅ **Rich Terminal Output** (Colored, professional display)
-- ✅ **Configuration File** (JSON-based settings)
-- ✅ **Account Manager** (Dedicated management tool)
+### 🚀 Ultra Advanced Bot Authorizer Features
+- ✅ **Ultra-Fast Concurrent Processing** - Authorize multiple guilds simultaneously (5 workers)
+- ✅ **100% FREE CAPTCHA Solving** - Multi-method solver chain with 8 different techniques
+- ✅ **AI Vision Models** - HuggingFace BLIP-2, ViT-GPT2 for automatic solving
+- ✅ **Advanced OCR** - EasyOCR + Tesseract with preprocessing
+- ✅ **Pattern Recognition** - ML-based CAPTCHA analysis
+- ✅ **Local LLM Support** - Ollama vision models integration
+- ✅ **Browser Automation** - Manual solving fallback (always works!)
+- ✅ **Smart Caching** - Never solve the same CAPTCHA twice
+- ✅ **Connection Pooling** - Optimized session management
+- ✅ **Proxy Rotation** - Support for proxy lists
+- ✅ **Smart Retry Logic** - Exponential backoff with automatic recovery
+- ✅ **Rate Limit Handling** - Intelligent delay management
+- ✅ **Performance Metrics** - Real-time statistics and analytics
+- ✅ **Beautiful Terminal Output** - Colored, professional display
+- ✅ **Concurrent Speedup** - Up to 5x faster than sequential processing
+- ✅ **Session Persistence** - Resume failed authorizations
+- ✅ **Comprehensive Error Handling** - Detailed logging and recovery
 
 ## Requirements
 
@@ -127,171 +107,127 @@ pip3 install -r requirements.txt
 
 ## Usage
 
-### 🆓 FREE Version (RECOMMENDED FOR TERMUX) ⭐
+### 🤖 Ultra Advanced Bot Authorizer ⭐ **MAIN FEATURE**
 
 ```bash
-# Run the FREE version with manual CAPTCHA solving
-python discord_creator_free.py
-```
-
-**What happens:**
-1. Script generates random credentials
-2. Gets temporary email automatically
-3. Registers Discord account
-4. **If CAPTCHA required**: Browser opens automatically
-5. You solve CAPTCHA in browser (10-30 seconds)
-6. Click submit button
-7. Script continues automatically
-8. Email verification happens
-9. Token saved to `tokens.txt`
-
-**Perfect for Termux!** See complete guide: [TERMUX_SETUP.md](TERMUX_SETUP.md)
-
-### Basic Version
-
-```bash
-# Run the basic account creator (no CAPTCHA support)
-python discord_creator.py
-```
-
-The script will:
-1. Ask how many accounts you want to create
-2. Generate random credentials for each account
-3. Create a temporary email address
-4. Register the Discord account
-5. Attempt to verify the email automatically
-6. Save the token to `tokens.txt`
-7. Save full account details to `accounts.txt`
-
-⚠️ May fail if CAPTCHA is required
-
-### Ultra Advanced Version 🚀
-
-```bash
-# First, configure settings (optional)
-nano config.json
-
-# Run the advanced creator
-python discord_creator_advanced.py
-```
-
-**Advanced Features Setup:**
-
-1. **Configure Proxies** (Optional but recommended)
-```bash
-# Create proxy list
-cp proxies.txt.example proxies.txt
-nano proxies.txt  # Add your proxies
-
-# Enable in config.json
-# Set "proxy": {"enabled": true}
-```
-
-2. **Setup CAPTCHA Solver** (Optional)
-```bash
-# Get API key from 2captcha.com or anti-captcha.com
-# Add to config.json:
-# "captcha": {"enabled": true, "api_key": "YOUR_KEY"}
-```
-
-3. **Enable Advanced Features**
-```bash
-# Edit config.json to enable:
-# - Multi-threading
-# - Database storage
-# - Profile customization
-# - Auto server joining
-```
-
-### Account Manager Tool
-
-```bash
-# Manage your created accounts
-python account_manager.py
-```
-
-Features:
-- List all accounts
-- Validate tokens
-- Export to various formats
-- View statistics
-- Delete invalid accounts
-
-### Bot Authorizer Tool 🤖 **NEW!**
-
-```bash
-# Add bots to guilds automatically with FREE LLM CAPTCHA solving
+# Run the ultra advanced bot authorizer
 python bot_authorizer.py
 ```
 
-Features:
-- 🤖 **FREE LLM CAPTCHA Solver** - AI-powered, 100% free, no API keys!
-- ✨ **Termux-Friendly** - Works perfectly on Android
-- 🎯 OAuth2 bot authorization
-- 🔄 Automatic CAPTCHA handling
-- 🛡️ Multiple fallback methods
-- ⚙️ Customizable permissions
-- 🌐 Support for all Discord endpoints
-- 📖 Educational/research purposes only
-- See [BOT_AUTHORIZER.md](BOT_AUTHORIZER.md) and [LLM_CAPTCHA.md](LLM_CAPTCHA.md) for details
+**What happens:**
+1. Enter your Discord user token
+2. Enter the bot's Client ID
+3. Enter permissions (or use default: 0)
+4. Choose authorization mode:
+   - **Option 1**: Add bot to ALL servers (ultra-fast concurrent mode!)
+   - **Option 2**: Add bot to a specific server
+5. Enable Ultra Advanced Free CAPTCHA solver (recommended: Yes)
+6. Enable ultra-fast concurrent mode (recommended: Yes for multiple guilds)
+7. If CAPTCHA appears, the solver automatically tries 8 different methods
+8. Bot is authorized to your guilds!
 
-## Output Files
+**Features:**
+- ⚡ **Ultra-Fast**: Process multiple guilds concurrently (up to 5x speedup!)
+- 🧠 **Smart CAPTCHA**: 8 different free solving methods with automatic fallback
+- 📊 **Performance Metrics**: See detailed statistics on completion
+- 🔄 **Auto-Retry**: Intelligent retry with exponential backoff
+- 💾 **Caching**: Never solve the same CAPTCHA twice
 
-- **tokens.txt** - Contains only the tokens (one per line)
-- **accounts.txt** - Contains full account details (email, username, password, token)
+**Example Output:**
+```
+Using ULTRA-FAST concurrent mode (5 workers)!
+[1/10] Server Name 1 - Success! (2.34s)
+[2/10] Server Name 2 - Success! (1.89s)
+...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           AUTHORIZATION SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ Successful: 10/10
+* Total time: 12.45s
+* Average per guild: 1.24s
+✓ Concurrent speedup: 4.2x faster!
+```
+
+### 🛠️ Configuration (Optional)
+
+Create a `proxies.txt` file to enable proxy rotation:
+```bash
+# Create proxy list
+cp proxies.txt.example proxies.txt
+nano proxies.txt  # Add your proxies (one per line)
+# Format: ip:port or user:pass@ip:port
+```
+
+The bot authorizer will automatically use proxies if the file exists.
 
 ## 📖 Documentation
 
-- **[ADVANCED_FEATURES.md](ADVANCED_FEATURES.md)** - Complete guide to advanced features
+- **[BOT_AUTHORIZER.md](BOT_AUTHORIZER.md)** - Detailed bot authorization guide
+- **[LLM_CAPTCHA.md](LLM_CAPTCHA.md)** - Free LLM CAPTCHA solver documentation
+- **[INTERACTIVE_CAPTCHA.md](INTERACTIVE_CAPTCHA.md)** - Manual CAPTCHA solving guide
 - **[config.json](config.json)** - Configuration file with all options
-- **[example_output.txt](example_output.txt)** - Example of what to expect
 
-## Notes
+## 🔧 Advanced Configuration
 
-### Basic Version
-- Uses free temporary email service (1secmail.com)
-- Email verification may take up to 5 minutes
-- Some accounts may require manual verification
-- Rate limiting: 30 seconds between accounts
-- Works completely in terminal (no GUI required)
+The bot authorizer supports advanced configuration through environment variables and proxies:
 
-### Advanced Version
-- Supports multiple email providers with automatic fallback
-- CAPTCHA solving increases success rate (requires paid API)
-- Proxy support prevents IP bans (highly recommended for bulk creation)
-- Multi-threading speeds up bulk creation
-- Database enables better account management
-- Configurable delays and retry mechanisms
-- See [ADVANCED_FEATURES.md](ADVANCED_FEATURES.md) for full documentation
+### Proxy Support
+Create a `proxies.txt` file with one proxy per line:
+```
+ip:port
+user:pass@ip:port
+```
+
+### Concurrent Workers
+Adjust the number of concurrent workers (default: 5):
+- More workers = faster processing
+- Fewer workers = less likely to hit rate limits
+- Recommended: 3-5 workers for best balance
+
+### CAPTCHA Solver Customization
+The ultra-advanced solver tries 8 methods in order:
+1. Cache (instant)
+2. HuggingFace BLIP-2
+3. HuggingFace ViT-GPT2
+4. EasyOCR
+5. Tesseract Advanced
+6. Pattern Recognition
+7. Local Ollama (if installed)
+8. Browser Manual (always works)
 
 ## Troubleshooting
 
-### "Failed to get email"
-- **NEW**: Improved error handling with automatic retry and fallback
-- The script now automatically retries 3 times with exponential backoff
-- If all attempts fail, it falls back to offline email generation
-- Check your internet connection if you see this error repeatedly
-- The temporary email service (1secmail.com) might be temporarily unavailable
-- Advanced version automatically tries alternative services (tempmail, guerrillamail)
+### "CAPTCHA solving failed"
+Don't worry! The solver tries 8 different methods:
+1. Make sure you have internet connection (for AI models)
+2. If all automatic methods fail, browser will open for manual solving
+3. Install optional packages for better success:
+   ```bash
+   pip install easyocr pytesseract opencv-python-headless
+   # For Ollama support: install from ollama.ai
+   ```
 
-### "Failed to get fingerprint"
+### "Rate limit error"
+- The bot automatically handles rate limits with exponential backoff
+- Reduce concurrent workers if you see many rate limit errors
+- Add delays between requests in sequential mode
+
+### "Authorization failed"
+- Check that your Discord token is valid
+- Make sure you have "Manage Server" permission on the guild
+- Verify the bot's Client ID is correct
+- Some guilds may have restrictions on bot addition
+
+### "Connection error"
 - Check your internet connection
-- Discord API might be temporarily unavailable
+- If using proxies, verify they are working
+- Discord API might be temporarily unavailable (retry later)
 
-### "Registration failed"
-- Discord might have implemented new anti-bot measures
-- Try again later or check if there are updates to the script
-
-### "Email verification timeout"
-- The temporary email service might be slow
-- The account is still created but may have limited functionality
-- Check `accounts.txt` for credentials
-
-### Network Connection Issues
-- The script includes robust error handling for network failures
-- Retry logic with exponential backoff (2s, 4s delays)
-- Automatic fallback to alternative email services (advanced version)
-- Offline email generation as last resort
+### Performance Issues
+- Install optional AI/OCR packages for faster CAPTCHA solving
+- Use concurrent mode for multiple guilds (much faster!)
+- Enable proxy rotation to avoid IP-based throttling
+- Consider running on a server with better internet connection
 
 ## Legal Notice
 

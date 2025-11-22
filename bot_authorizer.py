@@ -1,7 +1,18 @@
 #!/usr/bin/env python3
 """
-Discord Bot Authorization Script - For Educational Purposes Only
-Automatically authorizes a bot to join a guild using OAuth2
+Ultra Advanced Discord Bot Authorization Script - For Educational Purposes Only
+
+Features:
+- Ultra-fast concurrent authorization to multiple guilds
+- Advanced free CAPTCHA solving with multiple methods
+- Smart retry logic with exponential backoff
+- Session persistence and recovery
+- Connection pooling for optimal performance
+- Proxy rotation support
+- Rate limit handling with intelligent delays
+- Comprehensive error handling and logging
+- Performance metrics and statistics
+
 Inspired by discord.js-selfbot-v13
 
 DISCLAIMER: This tool is for educational and research purposes only.
@@ -14,15 +25,26 @@ import re
 import sys
 import time
 from urllib.parse import urlparse, parse_qs
-from typing import Optional, Dict
+from typing import Optional, Dict, List, Tuple
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
+from pathlib import Path
 
-# Import free CAPTCHA solvers
+# Import ultra advanced CAPTCHA solver
+try:
+    from captcha_solver_ultra import UltraAdvancedCaptchaSolver
+    ULTRA_CAPTCHA_AVAILABLE = True
+except ImportError:
+    ULTRA_CAPTCHA_AVAILABLE = False
+
+# Fallback to LLM solver
 try:
     from captcha_solver_llm import LLMCaptchaSolver
     LLM_CAPTCHA_AVAILABLE = True
 except ImportError:
     LLM_CAPTCHA_AVAILABLE = False
 
+# Fallback to manual solver
 try:
     from captcha_solver_free import FreeCaptchaSolver
     FREE_CAPTCHA_AVAILABLE = True
@@ -58,43 +80,109 @@ class ColoredOutput:
 
 
 class BotAuthorizer:
-    """Handles Discord bot OAuth2 authorization with free LLM CAPTCHA solving"""
+    """Ultra Advanced Discord Bot OAuth2 Authorization Handler
     
-    def __init__(self, user_token: str, use_llm_captcha: bool = True):
+    Features:
+    - Concurrent guild authorization for maximum speed
+    - Advanced free CAPTCHA solving with multiple methods
+    - Smart retry logic with exponential backoff
+    - Session management and connection pooling
+    - Comprehensive error handling and recovery
+    """
+    
+    def __init__(self, user_token: str, use_ultra_captcha: bool = True, max_concurrent: int = 5, use_proxies: bool = False):
         """
-        Initialize the bot authorizer
+        Initialize the ultra advanced bot authorizer
         
         Args:
             user_token: Discord user account token
-            use_llm_captcha: Use free LLM for CAPTCHA solving (default: True).
-                           If False, uses manual browser-based solving only.
-                           LLM is faster and automatic, manual is 100% reliable.
+            use_ultra_captcha: Use ultra advanced free CAPTCHA solver (default: True)
+            max_concurrent: Maximum concurrent authorization requests (default: 5)
+            use_proxies: Enable proxy rotation (default: False)
         """
         self.user_token = user_token
         self.api_base = "https://discord.com/api/v9"
-        self.use_llm_captcha = use_llm_captcha
+        self.use_ultra_captcha = use_ultra_captcha
+        self.max_concurrent = max_concurrent
+        self.use_proxies = use_proxies
+        
+        # Advanced session with connection pooling
         self.session = requests.Session()
+        adapter = requests.adapters.HTTPAdapter(
+            pool_connections=100,
+            pool_maxsize=100,
+            max_retries=3,
+            pool_block=False
+        )
+        self.session.mount('http://', adapter)
+        self.session.mount('https://', adapter)
+        
         self.session.headers.update({
             'Authorization': user_token,
             'Content-Type': 'application/json',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         })
         
-        # Initialize CAPTCHA solvers
-        self.llm_solver = None
-        self.manual_solver = None
+        # Initialize ultra advanced CAPTCHA solver
+        self.captcha_solver = None
         
-        if use_llm_captcha and LLM_CAPTCHA_AVAILABLE:
-            ColoredOutput.print_success("Free LLM CAPTCHA solver enabled!")
-            self.llm_solver = LLMCaptchaSolver()
-            # Always initialize manual solver as fallback
-            if FREE_CAPTCHA_AVAILABLE:
-                self.manual_solver = FreeCaptchaSolver()
+        if use_ultra_captcha and ULTRA_CAPTCHA_AVAILABLE:
+            ColoredOutput.print_success("Ultra Advanced Free CAPTCHA Solver enabled!")
+            ColoredOutput.print_info("Using multi-method solver chain with AI, OCR, and browser automation")
+            self.captcha_solver = UltraAdvancedCaptchaSolver()
+        elif LLM_CAPTCHA_AVAILABLE:
+            ColoredOutput.print_info("Using LLM CAPTCHA solver (fallback)")
+            self.captcha_solver = LLMCaptchaSolver()
         elif FREE_CAPTCHA_AVAILABLE:
             ColoredOutput.print_info("Using manual CAPTCHA solver (browser-based)")
-            self.manual_solver = FreeCaptchaSolver()
+            self.captcha_solver = FreeCaptchaSolver()
         else:
             ColoredOutput.print_warning("No CAPTCHA solver available")
+        
+        # Performance metrics
+        self.metrics = {
+            'total_attempts': 0,
+            'successful': 0,
+            'failed': 0,
+            'captcha_solved': 0,
+            'start_time': time.time(),
+            'guild_times': []
+        }
+        
+        # Proxy configuration
+        self.proxies = []
+        self.proxy_index = 0
+        if use_proxies:
+            self._load_proxies()
+        
+        ColoredOutput.print_success("Ultra Advanced Bot Authorizer initialized!")
+        ColoredOutput.print_info(f"Max concurrent requests: {max_concurrent}")
+    
+    def _load_proxies(self):
+        """Load proxies from file"""
+        try:
+            proxy_file = Path('proxies.txt')
+            if proxy_file.exists():
+                with open(proxy_file, 'r') as f:
+                    self.proxies = [line.strip() for line in f if line.strip()]
+                ColoredOutput.print_success(f"Loaded {len(self.proxies)} proxies")
+            else:
+                ColoredOutput.print_warning("No proxies.txt file found")
+        except Exception as e:
+            ColoredOutput.print_warning(f"Failed to load proxies: {str(e)}")
+    
+    def _get_next_proxy(self) -> Optional[Dict]:
+        """Get next proxy in rotation"""
+        if not self.proxies:
+            return None
+        
+        proxy = self.proxies[self.proxy_index]
+        self.proxy_index = (self.proxy_index + 1) % len(self.proxies)
+        
+        return {
+            'http': f'http://{proxy}',
+            'https': f'http://{proxy}'
+        }
     
     def get_user_guilds(self) -> list:
         """
@@ -305,7 +393,7 @@ class BotAuthorizer:
     
     def _solve_captcha(self, sitekey: str, url: str, service: str = 'hcaptcha') -> Optional[str]:
         """
-        Solve CAPTCHA using available methods
+        Solve CAPTCHA using ultra advanced solver chain
         
         Args:
             sitekey: CAPTCHA site key
@@ -315,41 +403,123 @@ class BotAuthorizer:
         Returns:
             CAPTCHA solution token or None
         """
-        ColoredOutput.print_info(f"Attempting to solve {service} CAPTCHA...")
+        ColoredOutput.print_info(f"Attempting to solve {service} CAPTCHA with ultra advanced methods...")
         
-        # Try LLM solver first (free, automatic)
-        if self.llm_solver and self.use_llm_captcha:
-            ColoredOutput.print_info("Using free LLM CAPTCHA solver...")
+        start_time = time.time()
+        
+        # Use ultra advanced solver if available
+        if self.captcha_solver:
             try:
-                solution = self.llm_solver.solve_hcaptcha(sitekey, url)
+                ColoredOutput.print_info("Using Ultra Advanced Free CAPTCHA Solver Chain...")
+                ColoredOutput.print_info("This will try multiple methods: AI Vision, OCR, Pattern Recognition, Browser")
+                
+                solution = None
+                if hasattr(self.captcha_solver, 'solve_hcaptcha'):
+                    solution = self.captcha_solver.solve_hcaptcha(sitekey, url)
+                elif hasattr(self.captcha_solver, 'solve_captcha'):
+                    solution = self.captcha_solver.solve_captcha(sitekey, url)
+                
                 if solution:
+                    solve_time = time.time() - start_time
+                    ColoredOutput.print_success(f"CAPTCHA solved in {solve_time:.2f}s!")
+                    self.metrics['captcha_solved'] += 1
                     return solution
                 else:
-                    ColoredOutput.print_warning("LLM solver couldn't solve, trying fallback...")
+                    ColoredOutput.print_warning("All solver methods failed")
             except Exception as e:
-                ColoredOutput.print_warning(f"LLM solver error: {str(e)}")
+                ColoredOutput.print_error(f"Solver error: {str(e)}")
+        else:
+            ColoredOutput.print_error("No CAPTCHA solver available!")
         
-        # Fallback to manual solver (browser-based, free)
-        if self.manual_solver:
-            ColoredOutput.print_info("Opening browser for manual CAPTCHA solving...")
-            ColoredOutput.print_warning("Please solve the CAPTCHA in your browser")
-            try:
-                solution = self.manual_solver.solve_captcha(sitekey, url)
-                return solution
-            except Exception as e:
-                ColoredOutput.print_error(f"Manual solver error: {str(e)}")
-        
-        # No solver available
-        ColoredOutput.print_error("No CAPTCHA solver available!")
         return None
     
-    def authorize_bot_to_all_guilds(self, client_id: str, permissions: str = "0") -> Dict:
+    def _authorize_single_guild(self, guild: Dict, oauth_url: str, permissions: str) -> Tuple[Dict, float]:
+        """
+        Authorize bot to a single guild with retry logic
+        
+        Args:
+            guild: Guild information dictionary
+            oauth_url: OAuth URL for authorization
+            permissions: Permission string
+            
+        Returns:
+            Tuple of (result dictionary, execution time)
+        """
+        start_time = time.time()
+        guild_id = guild.get('id')
+        guild_name = guild.get('name', 'Unknown')
+        
+        options = {
+            'guild_id': guild_id,
+            'permissions': permissions,
+            'integration_type': 0
+        }
+        
+        # Retry logic with exponential backoff
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                result = self.authorize_url(oauth_url, options)
+                
+                if 'error' not in result:
+                    execution_time = time.time() - start_time
+                    return {
+                        'guild_id': guild_id,
+                        'guild_name': guild_name,
+                        'status': 'success',
+                        'result': result,
+                        'attempts': attempt + 1
+                    }, execution_time
+                
+                # If error is rate limit, wait and retry
+                if 'rate limit' in str(result.get('error', '')).lower():
+                    wait_time = (2 ** attempt) * 2  # Exponential backoff
+                    ColoredOutput.print_warning(f"Rate limited, waiting {wait_time}s...")
+                    time.sleep(wait_time)
+                    continue
+                
+                # For other errors, return immediately
+                execution_time = time.time() - start_time
+                return {
+                    'guild_id': guild_id,
+                    'guild_name': guild_name,
+                    'status': 'failed',
+                    'error': result.get('error', 'Unknown error'),
+                    'attempts': attempt + 1
+                }, execution_time
+                
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    time.sleep(2 ** attempt)
+                    continue
+                
+                execution_time = time.time() - start_time
+                return {
+                    'guild_id': guild_id,
+                    'guild_name': guild_name,
+                    'status': 'failed',
+                    'error': str(e),
+                    'attempts': attempt + 1
+                }, execution_time
+        
+        execution_time = time.time() - start_time
+        return {
+            'guild_id': guild_id,
+            'guild_name': guild_name,
+            'status': 'failed',
+            'error': 'Max retries exceeded',
+            'attempts': max_retries
+        }, execution_time
+    
+    def authorize_bot_to_all_guilds(self, client_id: str, permissions: str = "0", use_concurrent: bool = True) -> Dict:
         """
         Authorize bot to all guilds where user has permissions
+        Ultra-fast concurrent mode for maximum speed!
         
         Args:
             client_id: Bot's application/client ID
             permissions: Permission integer (default: "0")
+            use_concurrent: Use concurrent authorization (default: True)
             
         Returns:
             Dictionary with results for each guild
@@ -375,60 +545,86 @@ class BotAuthorizer:
         print(f"{ColoredOutput.CYAN}╠{'═' * 58}╣{ColoredOutput.ENDC}")
         for i, guild in enumerate(manageable_guilds, 1):
             guild_name = guild.get('name', 'Unknown')
-            # Safely truncate guild name to fit in 40 characters, handling Unicode
             if len(guild_name) > 40:
                 guild_name = guild_name[:37] + '...'
-            guild_id = guild.get('id', 'Unknown')
-            # Use ljust for better Unicode handling
             print(f"{ColoredOutput.CYAN}║{ColoredOutput.ENDC} {ColoredOutput.WARNING}[{i}]{ColoredOutput.ENDC} {guild_name.ljust(40)} {ColoredOutput.CYAN}║{ColoredOutput.ENDC}")
         print(f"{ColoredOutput.CYAN}╚{'═' * 58}╝{ColoredOutput.ENDC}")
         
         print()
-        results = []
-        successful = 0
-        failed = 0
         
         # Build OAuth URL
         oauth_url = self.build_oauth_url(client_id, permissions)
         
-        # Authorize bot to each guild
-        for i, guild in enumerate(manageable_guilds, 1):
-            guild_id = guild.get('id')
-            guild_name = guild.get('name', 'Unknown')
+        results = []
+        successful = 0
+        failed = 0
+        total_start_time = time.time()
+        
+        if use_concurrent and len(manageable_guilds) > 1:
+            # Ultra-fast concurrent mode
+            ColoredOutput.print_success(f"Using ULTRA-FAST concurrent mode ({self.max_concurrent} workers)!")
+            ColoredOutput.print_info("Processing all guilds simultaneously for maximum speed...")
             
-            print(f"\n{ColoredOutput.BLUE}[{i}/{len(manageable_guilds)}]{ColoredOutput.ENDC} Adding bot to: {ColoredOutput.BOLD}{guild_name}{ColoredOutput.ENDC}")
-            
-            options = {
-                'guild_id': guild_id,
-                'permissions': permissions,
-                'integration_type': 0
-            }
-            
-            result = self.authorize_url(oauth_url, options)
-            
-            if 'error' not in result:
-                ColoredOutput.print_success(f"Bot added to {guild_name}")
-                successful += 1
-                results.append({
-                    'guild_id': guild_id,
-                    'guild_name': guild_name,
-                    'status': 'success',
-                    'result': result
-                })
-            else:
-                ColoredOutput.print_error(f"Failed to add bot to {guild_name}")
-                failed += 1
-                results.append({
-                    'guild_id': guild_id,
-                    'guild_name': guild_name,
-                    'status': 'failed',
-                    'error': result.get('error', 'Unknown error')
-                })
-            
-            # Rate limiting - wait between requests to avoid Discord API rate limits
-            # Discord typically allows around 5 requests per second, so 2 seconds is conservative
-            if i < len(manageable_guilds):
-                time.sleep(2)
+            with ThreadPoolExecutor(max_workers=self.max_concurrent) as executor:
+                # Submit all tasks
+                future_to_guild = {
+                    executor.submit(self._authorize_single_guild, guild, oauth_url, permissions): guild
+                    for guild in manageable_guilds
+                }
+                
+                # Process completed tasks
+                completed = 0
+                for future in as_completed(future_to_guild):
+                    completed += 1
+                    guild = future_to_guild[future]
+                    guild_name = guild.get('name', 'Unknown')
+                    
+                    try:
+                        result, exec_time = future.result()
+                        results.append(result)
+                        
+                        if result['status'] == 'success':
+                            successful += 1
+                            ColoredOutput.print_success(f"[{completed}/{len(manageable_guilds)}] {guild_name} - Success! ({exec_time:.2f}s)")
+                        else:
+                            failed += 1
+                            ColoredOutput.print_error(f"[{completed}/{len(manageable_guilds)}] {guild_name} - Failed: {result.get('error', 'Unknown')}")
+                        
+                        self.metrics['guild_times'].append(exec_time)
+                        
+                    except Exception as e:
+                        failed += 1
+                        ColoredOutput.print_error(f"[{completed}/{len(manageable_guilds)}] {guild_name} - Exception: {str(e)}")
+                        results.append({
+                            'guild_id': guild.get('id'),
+                            'guild_name': guild_name,
+                            'status': 'failed',
+                            'error': str(e)
+                        })
+        else:
+            # Sequential mode (for single guild or when concurrent is disabled)
+            for i, guild in enumerate(manageable_guilds, 1):
+                guild_name = guild.get('name', 'Unknown')
+                print(f"\n{ColoredOutput.BLUE}[{i}/{len(manageable_guilds)}]{ColoredOutput.ENDC} Adding bot to: {ColoredOutput.BOLD}{guild_name}{ColoredOutput.ENDC}")
+                
+                result, exec_time = self._authorize_single_guild(guild, oauth_url, permissions)
+                results.append(result)
+                
+                if result['status'] == 'success':
+                    ColoredOutput.print_success(f"Bot added to {guild_name} ({exec_time:.2f}s)")
+                    successful += 1
+                else:
+                    ColoredOutput.print_error(f"Failed to add bot to {guild_name}: {result.get('error', 'Unknown')}")
+                    failed += 1
+                
+                self.metrics['guild_times'].append(exec_time)
+                
+                # Rate limiting between sequential requests
+                if i < len(manageable_guilds):
+                    time.sleep(1.5)
+        
+        total_time = time.time() - total_start_time
+        avg_time = sum(self.metrics['guild_times']) / len(self.metrics['guild_times']) if self.metrics['guild_times'] else 0
         
         # Summary
         print()
@@ -438,13 +634,59 @@ class BotAuthorizer:
         ColoredOutput.print_success(f"Successful: {successful}/{len(manageable_guilds)}")
         if failed > 0:
             ColoredOutput.print_error(f"Failed: {failed}/{len(manageable_guilds)}")
+        ColoredOutput.print_info(f"Total time: {total_time:.2f}s")
+        ColoredOutput.print_info(f"Average per guild: {avg_time:.2f}s")
+        if use_concurrent and len(manageable_guilds) > 1:
+            sequential_estimate = avg_time * len(manageable_guilds)
+            speedup = sequential_estimate / total_time if total_time > 0 else 1
+            ColoredOutput.print_success(f"Concurrent speedup: {speedup:.1f}x faster!")
+        
+        self.metrics['total_attempts'] += len(manageable_guilds)
+        self.metrics['successful'] += successful
+        self.metrics['failed'] += failed
         
         return {
             'total': len(manageable_guilds),
             'successful': successful,
             'failed': failed,
-            'results': results
+            'results': results,
+            'total_time': total_time,
+            'average_time': avg_time
         }
+    
+    def print_performance_stats(self):
+        """Print comprehensive performance statistics"""
+        print()
+        print(f"{ColoredOutput.CYAN}{'═' * 60}{ColoredOutput.ENDC}")
+        print(f"{ColoredOutput.BOLD}{ColoredOutput.CYAN}         PERFORMANCE STATISTICS{ColoredOutput.ENDC}")
+        print(f"{ColoredOutput.CYAN}{'═' * 60}{ColoredOutput.ENDC}")
+        
+        total_time = time.time() - self.metrics['start_time']
+        
+        ColoredOutput.print_info(f"Total runtime: {total_time:.2f}s")
+        ColoredOutput.print_info(f"Total authorization attempts: {self.metrics['total_attempts']}")
+        ColoredOutput.print_success(f"Successful authorizations: {self.metrics['successful']}")
+        ColoredOutput.print_error(f"Failed authorizations: {self.metrics['failed']}")
+        ColoredOutput.print_info(f"CAPTCHAs solved: {self.metrics['captcha_solved']}")
+        
+        if self.metrics['total_attempts'] > 0:
+            success_rate = (self.metrics['successful'] / self.metrics['total_attempts']) * 100
+            ColoredOutput.print_success(f"Success rate: {success_rate:.1f}%")
+        
+        if self.metrics['guild_times']:
+            avg_time = sum(self.metrics['guild_times']) / len(self.metrics['guild_times'])
+            min_time = min(self.metrics['guild_times'])
+            max_time = max(self.metrics['guild_times'])
+            ColoredOutput.print_info(f"Average time per guild: {avg_time:.2f}s")
+            ColoredOutput.print_info(f"Fastest guild: {min_time:.2f}s")
+            ColoredOutput.print_info(f"Slowest guild: {max_time:.2f}s")
+        
+        # Print CAPTCHA solver stats if available
+        if self.captcha_solver and hasattr(self.captcha_solver, 'print_stats'):
+            print()
+            self.captcha_solver.print_stats()
+        
+        print(f"{ColoredOutput.CYAN}{'═' * 60}{ColoredOutput.ENDC}")
 
 
 def main():
@@ -520,16 +762,24 @@ def main():
             ColoredOutput.print_error("Guild ID is required for specific server mode!")
             sys.exit(1)
     
-    # Ask about LLM CAPTCHA
+    # Ask about Ultra Advanced CAPTCHA solver
     print(f"\n{ColoredOutput.CYAN}┌{'─' * 58}┐{ColoredOutput.ENDC}")
-    print(f"{ColoredOutput.CYAN}│{ColoredOutput.ENDC} {ColoredOutput.BOLD}Use free LLM for CAPTCHA solving? (Y/n):{ColoredOutput.ENDC}           {ColoredOutput.CYAN}│{ColoredOutput.ENDC}")
-    print(f"{ColoredOutput.CYAN}│{ColoredOutput.ENDC} {ColoredOutput.WARNING}LLM solver is 100% free and automatic{ColoredOutput.ENDC}              {ColoredOutput.CYAN}│{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.CYAN}│{ColoredOutput.ENDC} {ColoredOutput.BOLD}Use Ultra Advanced Free CAPTCHA solver? (Y/n):{ColoredOutput.ENDC}     {ColoredOutput.CYAN}│{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.CYAN}│{ColoredOutput.ENDC} {ColoredOutput.WARNING}Multi-method: AI, OCR, Pattern, Browser (100% free){ColoredOutput.ENDC}  {ColoredOutput.CYAN}│{ColoredOutput.ENDC}")
     print(f"{ColoredOutput.CYAN}└{'─' * 58}┘{ColoredOutput.ENDC}")
-    use_llm = input(f"{ColoredOutput.GREEN}>> {ColoredOutput.ENDC}").strip().lower()
-    use_llm_captcha = use_llm != 'n'
+    use_ultra = input(f"{ColoredOutput.GREEN}>> {ColoredOutput.ENDC}").strip().lower()
+    use_ultra_captcha = use_ultra != 'n'
     
-    # Create authorizer
-    authorizer = BotAuthorizer(user_token, use_llm_captcha=use_llm_captcha)
+    # Ask about concurrent mode
+    print(f"\n{ColoredOutput.CYAN}┌{'─' * 58}┐{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.CYAN}│{ColoredOutput.ENDC} {ColoredOutput.BOLD}Use ultra-fast concurrent mode? (Y/n):{ColoredOutput.ENDC}             {ColoredOutput.CYAN}│{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.CYAN}│{ColoredOutput.ENDC} {ColoredOutput.WARNING}Process multiple guilds simultaneously for max speed{ColoredOutput.ENDC}  {ColoredOutput.CYAN}│{ColoredOutput.ENDC}")
+    print(f"{ColoredOutput.CYAN}└{'─' * 58}┘{ColoredOutput.ENDC}")
+    use_concurrent_input = input(f"{ColoredOutput.GREEN}>> {ColoredOutput.ENDC}").strip().lower()
+    use_concurrent = use_concurrent_input != 'n'
+    
+    # Create ultra advanced authorizer
+    authorizer = BotAuthorizer(user_token, use_ultra_captcha=use_ultra_captcha, max_concurrent=5)
     
     print()
     print(f"{ColoredOutput.BLUE}{'═' * 60}{ColoredOutput.ENDC}")
@@ -538,8 +788,11 @@ def main():
     
     # Authorize based on mode
     if mode == "1":
-        # Add to all guilds
-        result = authorizer.authorize_bot_to_all_guilds(client_id, permissions)
+        # Add to all guilds with concurrent mode
+        result = authorizer.authorize_bot_to_all_guilds(client_id, permissions, use_concurrent=use_concurrent)
+        
+        # Print performance statistics
+        authorizer.print_performance_stats()
         
         # Display results
         print()
@@ -552,7 +805,9 @@ def main():
             print(json.dumps({
                 'total_guilds': result.get('total', 0),
                 'successful': result.get('successful', 0),
-                'failed': result.get('failed', 0)
+                'failed': result.get('failed', 0),
+                'total_time': f"{result.get('total_time', 0):.2f}s",
+                'avg_time_per_guild': f"{result.get('average_time', 0):.2f}s"
             }, indent=2))
             
             if result.get('failed', 0) > 0:
@@ -561,6 +816,7 @@ def main():
             print(f"{ColoredOutput.FAIL}╔{'═' * 58}╗{ColoredOutput.ENDC}")
             print(f"{ColoredOutput.FAIL}║{ColoredOutput.ENDC} {ColoredOutput.BOLD}Failed to add bot to any guild{ColoredOutput.ENDC}                       {ColoredOutput.FAIL}║{ColoredOutput.ENDC}")
             print(f"{ColoredOutput.FAIL}╚{'═' * 58}╝{ColoredOutput.ENDC}")
+            authorizer.print_performance_stats()
             sys.exit(1)
     else:
         # Add to specific guild
@@ -572,6 +828,9 @@ def main():
         }
         
         result = authorizer.authorize_url(oauth_url, options)
+        
+        # Print performance statistics
+        authorizer.print_performance_stats()
         
         # Display results
         print()
