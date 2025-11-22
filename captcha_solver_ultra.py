@@ -57,13 +57,15 @@ class UltraAdvancedCaptchaSolver:
     Combines multiple free methods with intelligent fallback chain
     """
     
-    def __init__(self, cache_dir: str = "/tmp/captcha_cache"):
+    def __init__(self, cache_dir: Optional[str] = None):
         """
         Initialize the ultra advanced CAPTCHA solver
         
         Args:
-            cache_dir: Directory for caching solved CAPTCHAs
+            cache_dir: Directory for caching solved CAPTCHAs (default: ~/captcha_cache)
         """
+        if cache_dir is None:
+            cache_dir = str(Path.home() / 'captcha_cache')
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
@@ -77,10 +79,22 @@ class UltraAdvancedCaptchaSolver:
             ('Cache Lookup', self._solve_from_cache),
             ('HuggingFace BLIP-2', self._solve_with_hf_blip2),
             ('HuggingFace ViT-GPT2', self._solve_with_hf_vitgpt2),
+            ('HuggingFace TrOCR', self._solve_with_hf_trocr),
+            ('HuggingFace CLIP', self._solve_with_hf_clip),
+            ('HuggingFace Donut', self._solve_with_hf_donut),
+            ('Keras OCR', self._solve_with_keras_ocr),
+            ('PaddleOCR', self._solve_with_paddle_ocr),
             ('EasyOCR', self._solve_with_easyocr),
             ('Tesseract Advanced', self._solve_with_tesseract_advanced),
+            ('Tesseract Multiple Languages', self._solve_with_tesseract_multilang),
+            ('OpenCV Template Matching', self._solve_with_opencv_template),
+            ('OpenCV Contour Detection', self._solve_with_opencv_contours),
+            ('Scikit-Image OCR', self._solve_with_skimage),
+            ('PIL Advanced Preprocessing', self._solve_with_pil_advanced),
             ('Pattern Recognition', self._solve_with_pattern_recognition),
+            ('ML Character Recognition', self._solve_with_ml_characters),
             ('Local LLM (Ollama)', self._solve_with_ollama),
+            ('Local LLM (LLaVA Next)', self._solve_with_ollama_llava_next),
             ('Browser Automation', self._solve_with_browser),
         ]
         
@@ -402,6 +416,423 @@ class UltraAdvancedCaptchaSolver:
             ColoredOutput.print_error("FreeCaptchaSolver not available")
         except Exception as e:
             ColoredOutput.print_warning(f"Browser solver failed: {str(e)}")
+        return None
+    
+    def _solve_with_hf_trocr(self, image_bytes: bytes, **kwargs) -> Optional[str]:
+        """Solve using HuggingFace TrOCR (Transformer-based OCR)"""
+        try:
+            ColoredOutput.print_info("Trying HuggingFace TrOCR...")
+            
+            response = self.session.post(
+                'https://api-inference.huggingface.co/models/microsoft/trocr-base-printed',
+                data=image_bytes,
+                headers={'Content-Type': 'application/octet-stream'},
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                if isinstance(result, list) and len(result) > 0:
+                    text = result[0].get('generated_text', '')
+                    if text:
+                        extracted = ''.join(c for c in text if c.isalnum())
+                        if extracted and 3 <= len(extracted) <= 10:
+                            ColoredOutput.print_success(f"TrOCR extracted: {extracted}")
+                            return extracted
+        
+        except Exception as e:
+            ColoredOutput.print_warning(f"TrOCR solver failed: {str(e)}")
+        return None
+    
+    def _solve_with_hf_clip(self, image_bytes: bytes, **kwargs) -> Optional[str]:
+        """Solve using HuggingFace CLIP with text prompts
+        
+        Note: CLIP is primarily for image classification. This method serves as a
+        framework for future implementation with candidate text matching.
+        """
+        try:
+            ColoredOutput.print_info("Trying HuggingFace CLIP...")
+            
+            # CLIP for zero-shot image classification
+            response = self.session.post(
+                'https://api-inference.huggingface.co/models/openai/clip-vit-large-patch14',
+                data=image_bytes,
+                headers={'Content-Type': 'application/octet-stream'},
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                if result:
+                    ColoredOutput.print_info(f"CLIP analysis complete")
+                    # TODO: Implement custom logic for text extraction
+                    # CLIP returns classification scores, would need to compare
+                    # image against candidate alphanumeric strings
+        
+        except Exception as e:
+            ColoredOutput.print_warning(f"CLIP solver failed: {str(e)}")
+        return None
+    
+    def _solve_with_hf_donut(self, image_bytes: bytes, **kwargs) -> Optional[str]:
+        """Solve using HuggingFace Donut (Document understanding)"""
+        try:
+            ColoredOutput.print_info("Trying HuggingFace Donut...")
+            
+            response = self.session.post(
+                'https://api-inference.huggingface.co/models/naver-clova-ix/donut-base',
+                data=image_bytes,
+                headers={'Content-Type': 'application/octet-stream'},
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                if isinstance(result, list) and len(result) > 0:
+                    text = result[0].get('generated_text', '')
+                    if text:
+                        extracted = self._extract_text_from_caption(text)
+                        if extracted:
+                            ColoredOutput.print_success(f"Donut extracted: {extracted}")
+                            return extracted
+        
+        except Exception as e:
+            ColoredOutput.print_warning(f"Donut solver failed: {str(e)}")
+        return None
+    
+    def _solve_with_keras_ocr(self, image_bytes: bytes, **kwargs) -> Optional[str]:
+        """Solve using Keras-OCR"""
+        try:
+            import keras_ocr
+            from PIL import Image
+            import numpy as np
+            
+            ColoredOutput.print_info("Trying Keras-OCR...")
+            
+            # Initialize pipeline (cached after first use)
+            if not hasattr(self, '_keras_ocr_pipeline'):
+                self._keras_ocr_pipeline = keras_ocr.pipeline.Pipeline()
+            
+            # Load image
+            image = Image.open(io.BytesIO(image_bytes))
+            image_np = np.array(image)
+            
+            # Recognize text
+            prediction_groups = self._keras_ocr_pipeline.recognize([image_np])
+            
+            if prediction_groups and len(prediction_groups) > 0:
+                predictions = prediction_groups[0]
+                texts = [text for text, box in predictions]
+                combined = ''.join(texts).strip()
+                extracted = ''.join(c for c in combined if c.isalnum())
+                
+                if extracted and 3 <= len(extracted) <= 10:
+                    ColoredOutput.print_success(f"Keras-OCR extracted: {extracted}")
+                    return extracted
+        
+        except ImportError:
+            ColoredOutput.print_warning("Keras-OCR not installed (pip install keras-ocr)")
+        except Exception as e:
+            ColoredOutput.print_warning(f"Keras-OCR solver failed: {str(e)}")
+        return None
+    
+    def _solve_with_paddle_ocr(self, image_bytes: bytes, **kwargs) -> Optional[str]:
+        """Solve using PaddleOCR (Baidu's OCR)"""
+        try:
+            from paddleocr import PaddleOCR
+            from PIL import Image
+            import numpy as np
+            
+            ColoredOutput.print_info("Trying PaddleOCR...")
+            
+            # Initialize OCR (cached after first use)
+            if not hasattr(self, '_paddle_ocr'):
+                self._paddle_ocr = PaddleOCR(use_angle_cls=True, lang='en', show_log=False)
+            
+            # Load image
+            image = Image.open(io.BytesIO(image_bytes))
+            image_np = np.array(image)
+            
+            # Run OCR
+            results = self._paddle_ocr.ocr(image_np, cls=True)
+            
+            if results and len(results) > 0 and results[0]:
+                texts = []
+                for line in results[0]:
+                    if len(line) >= 2:
+                        text = line[1][0]  # Get the text part
+                        texts.append(text)
+                
+                combined = ''.join(texts).strip()
+                extracted = ''.join(c for c in combined if c.isalnum())
+                
+                if extracted and 3 <= len(extracted) <= 10:
+                    ColoredOutput.print_success(f"PaddleOCR extracted: {extracted}")
+                    return extracted
+        
+        except ImportError:
+            ColoredOutput.print_warning("PaddleOCR not installed (pip install paddleocr)")
+        except Exception as e:
+            ColoredOutput.print_warning(f"PaddleOCR solver failed: {str(e)}")
+        return None
+    
+    def _solve_with_tesseract_multilang(self, image_bytes: bytes, **kwargs) -> Optional[str]:
+        """Solve using Tesseract with multiple language support"""
+        try:
+            import pytesseract
+            from PIL import Image
+            
+            ColoredOutput.print_info("Trying Tesseract with multiple languages...")
+            
+            # Load image
+            image = Image.open(io.BytesIO(image_bytes))
+            
+            # Try different language combinations
+            lang_configs = [
+                'eng+fra',  # English + French
+                'eng+deu',  # English + German
+                'eng+spa',  # English + Spanish
+                'eng+chi_sim',  # English + Simplified Chinese
+            ]
+            
+            for lang in lang_configs:
+                try:
+                    text = pytesseract.image_to_string(image, lang=lang, config='--psm 7').strip()
+                    extracted = ''.join(c for c in text if c.isalnum())
+                    
+                    if extracted and 3 <= len(extracted) <= 10:
+                        ColoredOutput.print_success(f"Tesseract ({lang}) extracted: {extracted}")
+                        return extracted
+                except Exception:
+                    continue
+        
+        except ImportError:
+            ColoredOutput.print_warning("Tesseract not installed")
+        except Exception as e:
+            ColoredOutput.print_warning(f"Tesseract multilang solver failed: {str(e)}")
+        return None
+    
+    def _solve_with_opencv_template(self, image_bytes: bytes, **kwargs) -> Optional[str]:
+        """Solve using OpenCV template matching"""
+        try:
+            import cv2
+            import numpy as np
+            from PIL import Image
+            
+            ColoredOutput.print_info("Trying OpenCV template matching...")
+            
+            # Load image
+            image = Image.open(io.BytesIO(image_bytes))
+            image_np = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+            gray = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
+            
+            # Apply preprocessing
+            _, thresh = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+            
+            # Find contours which might represent characters
+            contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            
+            if contours:
+                ColoredOutput.print_info(f"Found {len(contours)} potential character regions")
+                # Template matching would require pre-stored character templates
+                # This is a placeholder for the actual template matching logic
+        
+        except ImportError:
+            ColoredOutput.print_warning("OpenCV not installed")
+        except Exception as e:
+            ColoredOutput.print_warning(f"OpenCV template matching failed: {str(e)}")
+        return None
+    
+    def _solve_with_opencv_contours(self, image_bytes: bytes, **kwargs) -> Optional[str]:
+        """Solve using OpenCV contour detection and analysis"""
+        try:
+            import cv2
+            import numpy as np
+            from PIL import Image
+            import pytesseract
+            
+            ColoredOutput.print_info("Trying OpenCV contour detection...")
+            
+            # Load image
+            image = Image.open(io.BytesIO(image_bytes))
+            image_np = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+            gray = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
+            
+            # Apply multiple preprocessing techniques
+            blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+            _, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+            
+            # Morphological operations
+            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+            morph = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+            
+            # Convert back to PIL for Tesseract
+            result_image = Image.fromarray(morph)
+            text = pytesseract.image_to_string(result_image, config='--psm 7').strip()
+            extracted = ''.join(c for c in text if c.isalnum())
+            
+            if extracted and 3 <= len(extracted) <= 10:
+                ColoredOutput.print_success(f"OpenCV contours extracted: {extracted}")
+                return extracted
+        
+        except ImportError:
+            ColoredOutput.print_warning("OpenCV or Tesseract not installed")
+        except Exception as e:
+            ColoredOutput.print_warning(f"OpenCV contours solver failed: {str(e)}")
+        return None
+    
+    def _solve_with_skimage(self, image_bytes: bytes, **kwargs) -> Optional[str]:
+        """Solve using scikit-image preprocessing and OCR"""
+        try:
+            from skimage import filters, morphology, exposure
+            from skimage.io import imread
+            from PIL import Image
+            import numpy as np
+            import pytesseract
+            
+            ColoredOutput.print_info("Trying scikit-image preprocessing...")
+            
+            # Load image
+            image = Image.open(io.BytesIO(image_bytes))
+            image_np = np.array(image.convert('L'))
+            
+            # Apply various preprocessing techniques
+            # Adaptive histogram equalization
+            equalized = exposure.equalize_adapthist(image_np)
+            
+            # Apply Otsu thresholding
+            thresh = filters.threshold_otsu(equalized)
+            binary = equalized > thresh
+            
+            # Morphological operations
+            cleaned = morphology.remove_small_objects(binary, min_size=50)
+            
+            # Convert to PIL for OCR
+            result_image = Image.fromarray((cleaned * 255).astype(np.uint8))
+            text = pytesseract.image_to_string(result_image, config='--psm 7').strip()
+            extracted = ''.join(c for c in text if c.isalnum())
+            
+            if extracted and 3 <= len(extracted) <= 10:
+                ColoredOutput.print_success(f"Scikit-image extracted: {extracted}")
+                return extracted
+        
+        except ImportError:
+            ColoredOutput.print_warning("Scikit-image not installed (pip install scikit-image)")
+        except Exception as e:
+            ColoredOutput.print_warning(f"Scikit-image solver failed: {str(e)}")
+        return None
+    
+    def _solve_with_pil_advanced(self, image_bytes: bytes, **kwargs) -> Optional[str]:
+        """Solve using advanced PIL preprocessing techniques"""
+        try:
+            from PIL import Image, ImageEnhance, ImageFilter, ImageOps
+            import pytesseract
+            
+            ColoredOutput.print_info("Trying PIL advanced preprocessing...")
+            
+            # Load image
+            image = Image.open(io.BytesIO(image_bytes))
+            
+            # Try multiple PIL preprocessing pipelines
+            pipelines = [
+                # Pipeline 1: Invert + Enhance
+                lambda img: ImageEnhance.Contrast(ImageOps.invert(img.convert('L'))).enhance(3.0),
+                # Pipeline 2: AutoContrast + Sharpen
+                lambda img: ImageOps.autocontrast(img.convert('L')).filter(ImageFilter.SHARPEN),
+                # Pipeline 3: Equalize + Enhance
+                lambda img: ImageEnhance.Sharpness(ImageOps.equalize(img.convert('L'))).enhance(2.0),
+                # Pipeline 4: Solarize + Contrast
+                lambda img: ImageEnhance.Contrast(ImageOps.solarize(img.convert('L'), threshold=128)).enhance(2.5),
+            ]
+            
+            for i, pipeline in enumerate(pipelines):
+                try:
+                    processed = pipeline(image.copy())
+                    text = pytesseract.image_to_string(processed, config='--psm 7').strip()
+                    extracted = ''.join(c for c in text if c.isalnum())
+                    
+                    if extracted and 3 <= len(extracted) <= 10:
+                        ColoredOutput.print_success(f"PIL advanced (pipeline {i+1}) extracted: {extracted}")
+                        return extracted
+                except Exception:
+                    continue
+        
+        except ImportError:
+            ColoredOutput.print_warning("PIL or Tesseract not installed")
+        except Exception as e:
+            ColoredOutput.print_warning(f"PIL advanced solver failed: {str(e)}")
+        return None
+    
+    def _solve_with_ml_characters(self, image_bytes: bytes, **kwargs) -> Optional[str]:
+        """Solve using ML-based character recognition
+        
+        Note: This is a framework method for custom ML model integration.
+        Users can implement their own models here.
+        """
+        try:
+            from PIL import Image
+            import numpy as np
+            
+            ColoredOutput.print_info("Trying ML character recognition...")
+            
+            # Load image
+            image = Image.open(io.BytesIO(image_bytes))
+            image_np = np.array(image.convert('L'))
+            
+            # TODO: Implement ML model loading and inference
+            # Framework for custom ML model implementation:
+            # 1. Load pre-trained CNN model (custom trained on CAPTCHA datasets)
+            # 2. Use transfer learning from MNIST/EMNIST
+            # 3. Implement character segmentation + individual recognition
+            # 4. Try ensemble methods with multiple models
+            #
+            # Example implementation:
+            # if hasattr(self, '_ml_model'):
+            #     predictions = self._ml_model.predict(image_np)
+            #     return self._decode_predictions(predictions)
+            
+            ColoredOutput.print_info("ML character recognition - no custom model loaded")
+        
+        except Exception as e:
+            ColoredOutput.print_warning(f"ML character recognition failed: {str(e)}")
+        return None
+    
+    def _solve_with_ollama_llava_next(self, image_bytes: bytes, **kwargs) -> Optional[str]:
+        """Solve using Ollama with LLaVA-Next (improved vision model)"""
+        try:
+            ColoredOutput.print_info("Trying Ollama LLaVA-Next...")
+            
+            image_b64 = base64.b64encode(image_bytes).decode('utf-8')
+            
+            # Try LLaVA-Next variants
+            models = ['llava-next:latest', 'llava-phi3:latest', 'llava-v1.6:latest']
+            
+            for model in models:
+                try:
+                    response = self.session.post(
+                        'http://localhost:11434/api/generate',
+                        json={
+                            'model': model,
+                            'prompt': 'What text or alphanumeric code is shown in this CAPTCHA image? Reply with ONLY the characters, no explanation.',
+                            'images': [image_b64],
+                            'stream': False
+                        },
+                        timeout=60
+                    )
+                    
+                    if response.status_code == 200:
+                        result = response.json()
+                        text = result.get('response', '').strip()
+                        extracted = self._extract_text_from_caption(text)
+                        
+                        if extracted:
+                            ColoredOutput.print_success(f"Ollama LLaVA-Next ({model}) extracted: {extracted}")
+                            return extracted
+                
+                except requests.exceptions.RequestException:
+                    continue
+        
+        except Exception as e:
+            ColoredOutput.print_info("Ollama LLaVA-Next not available")
         return None
     
     def _extract_text_from_caption(self, caption: str) -> Optional[str]:
