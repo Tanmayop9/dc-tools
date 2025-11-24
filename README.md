@@ -43,7 +43,7 @@ node channel-creator.js
 
 ### Interactive Prompts
 
-1. **Enter bot token:** Your Discord bot token (starts with "Bot " or just the token)
+1. **Enter bot token:** Your Discord bot token (with or without "Bot " prefix - it will be added automatically)
 2. **Enter guild ID:** The Discord server (guild) ID where you want to create channels
 3. **Number of channels to create:** How many channels to create (e.g., 10, 50, 100)
 

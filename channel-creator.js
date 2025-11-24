@@ -24,13 +24,19 @@ function ask(q) {
 
 async function createChannelFast(token, guild, name) {
     while (true) {
+        // Normalize token - add "Bot " prefix if not present
+        var authToken = token.trim();
+        if (!authToken.startsWith("Bot ")) {
+            authToken = "Bot " + authToken;
+        }
+
         var res = await fetch(
             "https://discord.com/api/v10/guilds/" + guild + "/channels",
             {
                 method: "POST",
                 agent: agent,
                 headers: {
-                    "Authorization": "Bot " + token,
+                    "Authorization": authToken,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
@@ -41,11 +47,17 @@ async function createChannelFast(token, guild, name) {
         );
 
         if (res.status === 429) {
-            var json = await res.json();
-            var retry = json.retry_after * 1000;
-            console.log("⏳ Rate limited — retrying in " + retry + "ms");
-            await new Promise(function(r) { setTimeout(r, retry); });
-            continue;
+            try {
+                var json = await res.json();
+                var retry = json.retry_after * 1000;
+                console.log("⏳ Rate limited — retrying in " + retry + "ms");
+                await new Promise(function(r) { setTimeout(r, retry); });
+                continue;
+            } catch (e) {
+                console.log("⏳ Rate limited — retrying in 5s");
+                await new Promise(function(r) { setTimeout(r, 5000); });
+                continue;
+            }
         }
 
         if (res.status === 201 || res.status === 200) {
@@ -54,9 +66,13 @@ async function createChannelFast(token, guild, name) {
             return data;
         }
 
-        // Handle other errors
-        var errorData = await res.json();
-        console.log("❌ Error:", errorData.message || "Unknown error");
+        // Handle other errors - safely parse JSON
+        try {
+            var errorData = await res.json();
+            console.log("❌ Error:", errorData.message || "Unknown error (status: " + res.status + ")");
+        } catch (e) {
+            console.log("❌ Error: HTTP " + res.status);
+        }
         return null;
     }
 }
@@ -75,12 +91,16 @@ async function main() {
     var start = Date.now();
 
     console.log("\n⚡ Creating channels at MAX ultra speed...\n");
+    console.log("⚠️  Note: All channels are created concurrently for maximum speed.");
+    console.log("    Discord may rate limit if creating many channels.\n");
 
     var tasks = [];
     for (var i = 1; i <= COUNT; i++) {
         tasks.push(createChannelFast(BOT_TOKEN, GUILD_ID, "ultra-" + i));
     }
 
+    // Create all channels concurrently for maximum speed
+    // Rate limits are handled automatically with retry logic
     await Promise.all(tasks);
 
     // TIMER END

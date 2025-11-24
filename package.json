@@ -20,6 +20,7 @@
   "dependencies": {
     "node-fetch": "^2.7.0"
   },
+  "//": "node-fetch@2 is intentionally used for compatibility. For Node.js 18+, consider using native fetch.",
   "engines": {
     "node": ">=14.0.0"
   }
