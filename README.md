@@ -1,100 +1,23 @@
-# dc-tools
+# ⚡ Ultra-Fast Discord Channel Creator
 
-Ultra Advanced Discord Bot Authorizer - For Educational Purposes Only
+**Eye blink speed Discord channel creation with Node.js!**
 
-## 📚 Documentation
+## 🚀 Features
 
-- 🤖 **[Bot Authorizer Guide](BOT_AUTHORIZER.md)** - Ultra advanced bot authorization with free CAPTCHA solving
-- 🧠 **[Free LLM CAPTCHA Solver](LLM_CAPTCHA.md)** - AI-powered CAPTCHA solving (100% free!)
-- ⚡ **[Advanced Features](ADVANCED_FEATURES.md)** - Professional features guide
-- 🎯 **[Interactive CAPTCHA](INTERACTIVE_CAPTCHA.md)** - Manual CAPTCHA solving guide
-- 📖 **[Full README](#)** - You are here!
+- **⚡ Ultra-Fast Concurrent Creation** - Creates multiple channels simultaneously at maximum speed
+- **🔥 Optimized Performance** - Aggressive HTTPS keep-alive, connection pooling (100 sockets)
+- **🎯 Smart Rate Limit Handling** - Automatically retries with proper delays when rate limited
+- **📊 Performance Metrics** - Shows total time and average time per channel
+- **💪 Robust Error Handling** - Handles errors gracefully and continues operation
+- **🌟 Simple to Use** - Just 3 inputs: bot token, guild ID, and channel count
 
-## ⚠️ Disclaimer
+## 📋 Requirements
 
-This tool is provided for **educational purposes only**. Automating bot authorization may violate Discord's Terms of Service. Use at your own risk. The authors are not responsible for any misuse of this tool.
+- **Node.js** 14.0.0 or higher
+- **npm** (comes with Node.js)
+- Discord Bot with proper permissions
 
-## 🎯 Main Feature: Ultra Advanced Bot Authorizer
-
-**The world's fastest and most advanced FREE Discord bot authorization tool!**
-
-### ⚡ Key Features
-- 🚀 **Ultra-Fast Concurrent Authorization** - Process multiple guilds simultaneously (up to 5x faster!)
-- 🧠 **Multi-Method Free CAPTCHA Solving** - AI Vision, OCR, Pattern Recognition, Browser automation
-- 🔄 **Smart Retry Logic** - Exponential backoff with automatic recovery
-- ⚙️ **Connection Pooling** - Optimized session management for peak performance
-- 📊 **Performance Metrics** - Real-time statistics and detailed analytics
-- 🎯 **100% FREE** - No paid services required, ever!
-
-### 🆓 Free CAPTCHA Solver Chain
-Our ultra-advanced solver tries multiple methods in order:
-1. **Cache Lookup** - Instant if previously solved (fastest!)
-2. **HuggingFace BLIP-2** - Advanced AI vision model
-3. **HuggingFace ViT-GPT2** - Image-to-text captioning
-4. **EasyOCR** - Multi-language OCR with high accuracy
-5. **Tesseract Advanced** - Multiple preprocessing techniques
-6. **Pattern Recognition** - ML-based pattern matching
-7. **Local Ollama** - Local LLM vision models
-8. **Browser Automation** - Manual solving (100% reliable)
-
-## 🎯 Perfect for All Users
-
-**Works on Termux, Linux, macOS, and Windows!**
-- Ultra-fast concurrent processing
-- Multiple free CAPTCHA solving methods
-- Smart rate limiting and retry logic
-- Comprehensive performance tracking
-- 100% free - no paid services required
-
-## Features
-
-### 🚀 Ultra Advanced Bot Authorizer Features
-- ✅ **Ultra-Fast Concurrent Processing** - Authorize multiple guilds simultaneously (5 workers)
-- ✅ **100% FREE CAPTCHA Solving** - Multi-method solver chain with 8 different techniques
-- ✅ **AI Vision Models** - HuggingFace BLIP-2, ViT-GPT2 for automatic solving
-- ✅ **Advanced OCR** - EasyOCR + Tesseract with preprocessing
-- ✅ **Pattern Recognition** - ML-based CAPTCHA analysis
-- ✅ **Local LLM Support** - Ollama vision models integration
-- ✅ **Browser Automation** - Manual solving fallback (always works!)
-- ✅ **Smart Caching** - Never solve the same CAPTCHA twice
-- ✅ **Connection Pooling** - Optimized session management
-- ✅ **Proxy Rotation** - Support for proxy lists
-- ✅ **Smart Retry Logic** - Exponential backoff with automatic recovery
-- ✅ **Rate Limit Handling** - Intelligent delay management
-- ✅ **Performance Metrics** - Real-time statistics and analytics
-- ✅ **Beautiful Terminal Output** - Colored, professional display
-- ✅ **Concurrent Speedup** - Up to 5x faster than sequential processing
-- ✅ **Session Persistence** - Resume failed authorizations
-- ✅ **Comprehensive Error Handling** - Detailed logging and recovery
-
-## Requirements
-
-- Python 3.6+
-- Internet connection
-
-## Installation
-
-### On Termux (Android)
-
-```bash
-# Update packages
-pkg update && pkg upgrade
-
-# Install Python
-pkg install python
-
-# Install git (if not already installed)
-pkg install git
-
-# Clone the repository
-git clone https://github.com/Tanmayop9/dc-tools.git
-cd dc-tools
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-### On Linux/macOS
+## 🔧 Installation
 
 ```bash
 # Clone the repository
@@ -102,137 +25,125 @@ git clone https://github.com/Tanmayop9/dc-tools.git
 cd dc-tools
 
 # Install dependencies
-pip3 install -r requirements.txt
+npm install
 ```
 
-## Usage
-
-### 🤖 Ultra Advanced Bot Authorizer ⭐ **MAIN FEATURE**
+## 🎯 Usage
 
 ```bash
-# Run the ultra advanced bot authorizer
-python bot_authorizer.py
+# Run the channel creator
+npm start
 ```
 
-**What happens:**
-1. Enter your Discord user token
-2. Enter the bot's Client ID
-3. Enter permissions (or use default: 0)
-4. Choose authorization mode:
-   - **Option 1**: Add bot to ALL servers (ultra-fast concurrent mode!)
-   - **Option 2**: Add bot to a specific server
-5. Enable Ultra Advanced Free CAPTCHA solver (recommended: Yes)
-6. Enable ultra-fast concurrent mode (recommended: Yes for multiple guilds)
-7. If CAPTCHA appears, the solver automatically tries 8 different methods
-8. Bot is authorized to your guilds!
+Or directly:
 
-**Features:**
-- ⚡ **Ultra-Fast**: Process multiple guilds concurrently (up to 5x speedup!)
-- 🧠 **Smart CAPTCHA**: 8 different free solving methods with automatic fallback
-- 📊 **Performance Metrics**: See detailed statistics on completion
-- 🔄 **Auto-Retry**: Intelligent retry with exponential backoff
-- 💾 **Caching**: Never solve the same CAPTCHA twice
-
-**Example Output:**
-```
-Using ULTRA-FAST concurrent mode (5 workers)!
-[1/10] Server Name 1 - Success! (2.34s)
-[2/10] Server Name 2 - Success! (1.89s)
-...
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-           AUTHORIZATION SUMMARY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ Successful: 10/10
-* Total time: 12.45s
-* Average per guild: 1.24s
-✓ Concurrent speedup: 4.2x faster!
-```
-
-### 🛠️ Configuration (Optional)
-
-Create a `proxies.txt` file to enable proxy rotation:
 ```bash
-# Create proxy list
-cp proxies.txt.example proxies.txt
-nano proxies.txt  # Add your proxies (one per line)
-# Format: ip:port or user:pass@ip:port
+node channel-creator.js
 ```
 
-The bot authorizer will automatically use proxies if the file exists.
+### Interactive Prompts
 
-## 📖 Documentation
+1. **Enter bot token:** Your Discord bot token (starts with "Bot " or just the token)
+2. **Enter guild ID:** The Discord server (guild) ID where you want to create channels
+3. **Number of channels to create:** How many channels to create (e.g., 10, 50, 100)
 
-- **[BOT_AUTHORIZER.md](BOT_AUTHORIZER.md)** - Detailed bot authorization guide
-- **[LLM_CAPTCHA.md](LLM_CAPTCHA.md)** - Free LLM CAPTCHA solver documentation
-- **[INTERACTIVE_CAPTCHA.md](INTERACTIVE_CAPTCHA.md)** - Manual CAPTCHA solving guide
-- **[config.json](config.json)** - Configuration file with all options
+### Example Session
 
-## 🔧 Advanced Configuration
-
-The bot authorizer supports advanced configuration through environment variables and proxies:
-
-### Proxy Support
-Create a `proxies.txt` file with one proxy per line:
 ```
-ip:port
-user:pass@ip:port
+🔥 ULTRA-FAST DISCORD CHANNEL CREATOR 🔥
+
+⚡ Eye blink speed | Maximum performance
+
+Enter bot token: YOUR_BOT_TOKEN_HERE
+Enter guild ID: 1234567890123456789
+Number of channels to create: 10
+
+⚡ Creating channels at MAX ultra speed...
+
+⚡ Created: ultra-1
+⚡ Created: ultra-2
+⚡ Created: ultra-3
+⚡ Created: ultra-4
+⚡ Created: ultra-5
+⚡ Created: ultra-6
+⚡ Created: ultra-7
+⚡ Created: ultra-8
+⚡ Created: ultra-9
+⚡ Created: ultra-10
+
+🔥 Finished! Ultra-fast burst completed!
+⏱️  Time taken: 3.456 seconds
+🚀 Average: 345ms per channel
 ```
 
-### Concurrent Workers
-Adjust the number of concurrent workers (default: 5):
-- More workers = faster processing
-- Fewer workers = less likely to hit rate limits
-- Recommended: 3-5 workers for best balance
+## 🛠️ Technical Details
 
-### CAPTCHA Solver Customization
-The ultra-advanced solver tries 8 methods in order:
-1. Cache (instant)
-2. HuggingFace BLIP-2
-3. HuggingFace ViT-GPT2
-4. EasyOCR
-5. Tesseract Advanced
-6. Pattern Recognition
-7. Local Ollama (if installed)
-8. Browser Manual (always works)
+### Performance Optimizations
 
-## Troubleshooting
+- **Connection Pooling:** 100 concurrent sockets with keep-alive
+- **Promise.all():** All channels are created concurrently
+- **Persistent Connections:** Keep-alive for 30 seconds
+- **Minimal Overhead:** Streamlined code for maximum speed
 
-### "CAPTCHA solving failed"
-Don't worry! The solver tries 8 different methods:
-1. Make sure you have internet connection (for AI models)
-2. If all automatic methods fail, browser will open for manual solving
-3. Install optional packages for better success:
-   ```bash
-   pip install easyocr pytesseract opencv-python-headless
-   # For Ollama support: install from ollama.ai
-   ```
+### Rate Limiting
 
-### "Rate limit error"
-- The bot automatically handles rate limits with exponential backoff
-- Reduce concurrent workers if you see many rate limit errors
-- Add delays between requests in sequential mode
+The tool automatically handles Discord's rate limits:
+- Detects 429 (Too Many Requests) responses
+- Waits for the exact retry_after duration
+- Continues creation seamlessly
 
-### "Authorization failed"
-- Check that your Discord token is valid
-- Make sure you have "Manage Server" permission on the guild
-- Verify the bot's Client ID is correct
-- Some guilds may have restrictions on bot addition
+### HTTPS Agent Configuration
 
-### "Connection error"
-- Check your internet connection
-- If using proxies, verify they are working
-- Discord API might be temporarily unavailable (retry later)
+```javascript
+{
+    keepAlive: true,
+    maxSockets: 100,
+    maxFreeSockets: 100,
+    keepAliveMsecs: 30000,
+    timeout: 60000
+}
+```
 
-### Performance Issues
-- Install optional AI/OCR packages for faster CAPTCHA solving
-- Use concurrent mode for multiple guilds (much faster!)
-- Enable proxy rotation to avoid IP-based throttling
-- Consider running on a server with better internet connection
+## ⚠️ Important Notes
 
-## Legal Notice
+1. **Bot Permissions:** Your bot must have "Manage Channels" permission in the target guild
+2. **Rate Limits:** Discord has rate limits. The tool handles them automatically, but creating hundreds of channels may take time
+3. **Token Security:** Never share your bot token publicly. Keep it secure!
+4. **Channel Names:** Channels are created with names like "ultra-1", "ultra-2", etc.
 
-This tool is for educational and research purposes only. Automated account creation may violate Discord's Terms of Service. Users are responsible for ensuring their use complies with all applicable laws and terms of service.
+## 🔐 Getting Your Bot Token
 
-## License
+1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
+2. Select your application (or create one)
+3. Go to "Bot" section
+4. Copy the bot token
+5. **Important:** Enable necessary intents if required
+
+## 📝 Getting Guild ID
+
+1. Enable Developer Mode in Discord (User Settings → Advanced → Developer Mode)
+2. Right-click on your server icon
+3. Click "Copy ID"
+
+## 🚨 Disclaimer
+
+This tool is for **educational purposes only**. Make sure you have proper authorization to create channels in the target server. Misuse of this tool may violate Discord's Terms of Service.
+
+## 📄 License
 
 MIT License - Use at your own risk
+
+## 🤝 Contributing
+
+Feel free to open issues or submit pull requests!
+
+## 🌟 Why This Tool?
+
+- **Blazing Fast:** Uses concurrent creation with optimized networking
+- **Reliable:** Handles rate limits and errors automatically
+- **Simple:** No complex configuration needed
+- **Efficient:** Maximum performance with minimal resource usage
+
+---
+
+**Made with ⚡ by Tanmayop9**
