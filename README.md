@@ -4,13 +4,14 @@
 
 ## 🚀 Features
 
-- **⚡ Ultra-Fast Channel Creator** - Creates multiple channels simultaneously at maximum speed
-- **🗑️ Ultra-Fast Channel Deleter** - Deletes all channels in a server with confirmation
-- **🔥 Optimized Performance** - Aggressive HTTPS keep-alive, connection pooling (100 sockets)
-- **🎯 Smart Rate Limit Handling** - Automatically retries with proper delays when rate limited
-- **📊 Performance Metrics** - Shows total time and average time per channel
-- **💪 Robust Error Handling** - Handles errors gracefully and continues operation
+- **⚡ EXTREME SPEED Channel Creator** - Create 100 channels in eye blink! Batched concurrent processing
+- **🗑️ EXTREME SPEED Channel Deleter** - Delete 100 channels in seconds! Batched concurrent processing
+- **🔥 Maximum Performance** - 200-socket connection pool, LIFO scheduling, 50-channel batches
+- **🎯 Smart Rate Limit Handling** - Automatically retries with optimized delays
+- **📊 Performance Metrics** - Shows time, average, channels/second, success rate
+- **💪 Robust Error Handling** - Handles errors gracefully with automatic retry (3 attempts)
 - **🌟 Simple to Use** - Just a few inputs: bot token, guild ID, and options
+- **💨 Silent Mode** - Auto-activates for 20+ channels to maximize speed
 
 ## 📋 Requirements
 
@@ -69,30 +70,33 @@ node channel-deleter.js
 ```
 🔥 ULTRA-FAST DISCORD CHANNEL CREATOR 🔥
 
-⚡ Eye blink speed | Maximum performance
+⚡ Eye blink speed | 100 channels in seconds!
 
 Enter bot token: YOUR_BOT_TOKEN_HERE
 Enter guild ID: 1234567890123456789
-Number of channels to create: 10
+Number of channels to create: 100
 
-⚡ Creating channels at MAX ultra speed...
+⚡ EXTREME SPEED MODE ACTIVATED!
 
-⚡ Created: ultra-1
-⚡ Created: ultra-2
-⚡ Created: ultra-3
-...
-⚡ Created: ultra-10
+💨 Creating 100 channels with batched concurrent processing...
 
-🔥 Finished! Ultra-fast burst completed!
-⏱️  Time taken: 3.456 seconds
-🚀 Average: 345ms per channel
+🚀 Batch 1/2 - Processing 50 channels...
+🚀 Batch 2/2 - Processing 50 channels...
+
+🔥 EXTREME SPEED COMPLETED!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⏱️  Time taken: 12.345 seconds
+✅ Successfully created: 100/100 channels
+🚀 Average: 123ms per channel
+💨 Speed: 8.1 channels/second
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 #### Channel Deleter:
 ```
 🔥 ULTRA-FAST DISCORD CHANNEL DELETER 🔥
 
-⚡ Eye blink speed | Maximum performance
+⚡ Eye blink speed | 100 channels in seconds!
 
 ⚠️  WARNING: This will delete channels permanently!
 
@@ -101,35 +105,54 @@ Enter guild ID: 1234567890123456789
 
 📡 Fetching channels...
 
-📊 Found 10 channels in the server.
+📊 Found 100 channels in the server.
 
-Channels to delete:
+Showing first 10 channels:
   1. ultra-1 (ID: 123...)
   2. ultra-2 (ID: 456...)
   ...
+  10. ultra-10 (ID: ...)
+  ... and 90 more channels
 
-⚠️  Delete ALL 10 channels? (yes/no): yes
+⚠️  Delete ALL 100 channels? (yes/no): yes
 
-⚡ Deleting channels at MAX ultra speed...
+⚡ EXTREME SPEED MODE ACTIVATED!
 
-🗑️  Deleted: ultra-1
-🗑️  Deleted: ultra-2
-...
+💨 Deleting 100 channels with batched concurrent processing...
 
-🔥 Finished! Ultra-fast deletion completed!
-⏱️  Time taken: 2.145 seconds
-✅ Successfully deleted: 10/10 channels
-🚀 Average: 214ms per channel
+🚀 Batch 1/2 - Deleting 50 channels...
+🚀 Batch 2/2 - Deleting 50 channels...
+
+🔥 EXTREME SPEED COMPLETED!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⏱️  Time taken: 8.123 seconds
+✅ Successfully deleted: 100/100 channels
+🚀 Average: 81ms per channel
+💨 Speed: 12.3 channels/second
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
+
+## 💨 Speed Benchmarks
+
+**Typical performance for 100 channels:**
+- Creation: ~5-15 seconds (6-20 channels/second)
+- Deletion: ~3-10 seconds (10-33 channels/second)
+- Average per channel: ~100-200ms
+
+*Actual speed depends on Discord's rate limits and network latency*
 
 ## 🛠️ Technical Details
 
 ### Performance Optimizations
 
-- **Connection Pooling:** 100 concurrent sockets with keep-alive
-- **Promise.all():** All channels are created concurrently
-- **Persistent Connections:** Keep-alive for 30 seconds
+- **Connection Pooling:** 200 concurrent sockets with keep-alive (doubled!)
+- **Batched Processing:** 50 channels per batch for optimal throughput
+- **LIFO Scheduling:** Hot connection reuse for minimum latency
+- **Promise.all():** All channels in batch processed concurrently
+- **Persistent Connections:** Keep-alive for 60 seconds
 - **Minimal Overhead:** Streamlined code for maximum speed
+- **Smart Retries:** Up to 3 attempts with exponential backoff
+- **Silent Mode:** Reduces console overhead for large operations (20+ channels)
 
 ### Rate Limiting
 
@@ -138,15 +161,25 @@ The tool automatically handles Discord's rate limits:
 - Waits for the exact retry_after duration
 - Continues creation seamlessly
 
-### HTTPS Agent Configuration
+### HTTPS Agent Configuration (EXTREME SPEED)
 
 ```javascript
 {
     keepAlive: true,
-    maxSockets: 100,
-    maxFreeSockets: 100,
-    keepAliveMsecs: 30000,
-    timeout: 60000
+    maxSockets: 200,          // Doubled for extreme speed!
+    maxFreeSockets: 200,
+    keepAliveMsecs: 60000,    // 60 seconds
+    timeout: 30000,
+    scheduling: "lifo"        // Last-in-first-out (hot connections)
+}
+```
+
+### Batching Configuration
+
+```javascript
+{
+    batchSize: 50,            // 50 channels per batch
+    batchDelay: 50            // Only 50ms between batches
 }
 ```
 

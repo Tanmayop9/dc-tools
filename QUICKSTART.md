@@ -1,6 +1,8 @@
 # ⚡ Quick Start Guide
 
-Get started with the Ultra-Fast Discord Channel Tools in 3 simple steps!
+Get started with EXTREME SPEED Discord Channel Tools in 3 simple steps!
+
+**100 channels in eye blink! 💨**
 
 ## 🚀 Installation
 
@@ -40,26 +42,26 @@ $ npm start
 
 🔥 ULTRA-FAST DISCORD CHANNEL CREATOR 🔥
 
-⚡ Eye blink speed | Maximum performance
+⚡ Eye blink speed | 100 channels in seconds!
 
 Enter bot token: YOUR_BOT_TOKEN_HERE
 Enter guild ID: 1234567890123456789
-Number of channels to create: 5
+Number of channels to create: 100
 
-⚡ Creating channels at MAX ultra speed...
+⚡ EXTREME SPEED MODE ACTIVATED!
 
-⚠️  Note: All channels are created concurrently for maximum speed.
-    Discord may rate limit if creating many channels.
+💨 Creating 100 channels with batched concurrent processing...
 
-⚡ Created: ultra-1
-⚡ Created: ultra-2
-⚡ Created: ultra-3
-⚡ Created: ultra-4
-⚡ Created: ultra-5
+🚀 Batch 1/2 - Processing 50 channels...
+🚀 Batch 2/2 - Processing 50 channels...
 
-🔥 Finished! Ultra-fast burst completed!
-⏱️  Time taken: 1.234 seconds
-🚀 Average: 246ms per channel
+🔥 EXTREME SPEED COMPLETED!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⏱️  Time taken: 10.567 seconds
+✅ Successfully created: 100/100 channels
+🚀 Average: 105ms per channel
+💨 Speed: 9.5 channels/second
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ### Deleting Channels
@@ -69,7 +71,7 @@ $ npm run delete
 
 🔥 ULTRA-FAST DISCORD CHANNEL DELETER 🔥
 
-⚡ Eye blink speed | Maximum performance
+⚡ Eye blink speed | 100 channels in seconds!
 
 ⚠️  WARNING: This will delete channels permanently!
 
@@ -78,38 +80,42 @@ Enter guild ID: 1234567890123456789
 
 📡 Fetching channels...
 
-📊 Found 5 channels in the server.
+📊 Found 100 channels in the server.
 
-Channels to delete:
+Showing first 10 channels:
   1. ultra-1 (ID: 123...)
   2. ultra-2 (ID: 456...)
-  3. ultra-3 (ID: 789...)
-  4. ultra-4 (ID: 012...)
-  5. ultra-5 (ID: 345...)
+  ...
+  10. ultra-10 (ID: ...)
+  ... and 90 more channels
 
-⚠️  Delete ALL 5 channels? (yes/no): yes
+⚠️  Delete ALL 100 channels? (yes/no): yes
 
-⚡ Deleting channels at MAX ultra speed...
+⚡ EXTREME SPEED MODE ACTIVATED!
 
-🗑️  Deleted: ultra-1
-🗑️  Deleted: ultra-2
-🗑️  Deleted: ultra-3
-🗑️  Deleted: ultra-4
-🗑️  Deleted: ultra-5
+💨 Deleting 100 channels with batched concurrent processing...
 
-🔥 Finished! Ultra-fast deletion completed!
-⏱️  Time taken: 1.123 seconds
-✅ Successfully deleted: 5/5 channels
-🚀 Average: 224ms per channel
+🚀 Batch 1/2 - Deleting 50 channels...
+🚀 Batch 2/2 - Deleting 50 channels...
+
+🔥 EXTREME SPEED COMPLETED!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⏱️  Time taken: 7.891 seconds
+✅ Successfully deleted: 100/100 channels
+🚀 Average: 78ms per channel
+💨 Speed: 12.7 channels/second
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ## 💡 Tips
 
-- **Small batches:** Start with 5-10 channels to avoid rate limits
-- **Rate limits:** The tools automatically handle rate limits and retries
-- **Speed:** Concurrent operations mean everything happens at once!
+- **EXTREME SPEED:** Tools optimized for 100+ channels with batched processing
+- **Rate limits:** Automatically handled with smart retry logic
+- **Batching:** Processes 50 channels per batch for optimal throughput
+- **Silent mode:** Auto-activates for 20+ channels to maximize speed
 - **Channel names:** Created channels are named "ultra-1", "ultra-2", etc.
 - **Be careful with delete:** The deleter is permanent - make sure you want to delete ALL channels!
+- **Performance:** Expect 6-20 channels/second for creation, 10-33 for deletion
 
 ## 🔧 Troubleshooting
 

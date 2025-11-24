@@ -2,14 +2,19 @@ var readline = require("readline");
 var fetch = require("node-fetch");
 var https = require("https");
 
-// Ultra-fast HTTPS agent with aggressive keep-alive settings
+// EXTREME SPEED HTTPS agent - maximized for eye blink performance
 var agent = new https.Agent({
     keepAlive: true,
-    maxSockets: 100,
-    maxFreeSockets: 100,
-    keepAliveMsecs: 30000,
-    timeout: 60000
+    maxSockets: 200,              // Double the sockets
+    maxFreeSockets: 200,
+    keepAliveMsecs: 60000,        // Longer keep-alive
+    timeout: 30000,
+    scheduling: "lifo"            // Last-in-first-out for hot connections
 });
+
+// Batching configuration for extreme speed
+var BATCH_SIZE = 50;              // Process 50 channels at a time
+var BATCH_DELAY = 50;             // Tiny 50ms delay between batches
 
 var rl = readline.createInterface({
     input: process.stdin,
@@ -22,12 +27,22 @@ function ask(q) {
     });
 }
 
-async function getChannels(token, guild) {
-    // Normalize token - add "Bot " prefix if not present
-    var authToken = token.trim();
-    if (!authToken.startsWith("Bot ")) {
-        authToken = "Bot " + authToken;
+// Pre-normalize token once for all requests
+var normalizedToken = null;
+
+function normalizeToken(token) {
+    if (!normalizedToken) {
+        var authToken = token.trim();
+        if (!authToken.startsWith("Bot ")) {
+            authToken = "Bot " + authToken;
+        }
+        normalizedToken = authToken;
     }
+    return normalizedToken;
+}
+
+async function getChannels(token, guild) {
+    var authToken = normalizeToken(token);
 
     var res = await fetch(
         "https://discord.com/api/v10/guilds/" + guild + "/channels",
@@ -54,58 +69,76 @@ async function getChannels(token, guild) {
     return null;
 }
 
-async function deleteChannelFast(token, channelId, channelName) {
-    while (true) {
-        // Normalize token - add "Bot " prefix if not present
-        var authToken = token.trim();
-        if (!authToken.startsWith("Bot ")) {
-            authToken = "Bot " + authToken;
-        }
+async function deleteChannelFast(token, channelId, channelName, silent) {
+    var authToken = normalizeToken(token);
+    var maxRetries = 3;
+    var retryCount = 0;
 
-        var res = await fetch(
-            "https://discord.com/api/v10/channels/" + channelId,
-            {
-                method: "DELETE",
-                agent: agent,
-                headers: {
-                    "Authorization": authToken
+    while (retryCount < maxRetries) {
+        try {
+            var res = await fetch(
+                "https://discord.com/api/v10/channels/" + channelId,
+                {
+                    method: "DELETE",
+                    agent: agent,
+                    headers: {
+                        "Authorization": authToken
+                    }
+                }
+            );
+
+            if (res.status === 429) {
+                var json = await res.json();
+                var retry = Math.min(json.retry_after * 1000, 5000); // Cap at 5s
+                if (!silent) console.log("⏳ Rate limited — waiting " + retry + "ms");
+                await new Promise(function(r) { setTimeout(r, retry); });
+                retryCount++;
+                continue;
+            }
+
+            if (res.status === 204 || res.status === 200) {
+                if (!silent) console.log("🗑️  Deleted:", channelName);
+                return { success: true, name: channelName };
+            }
+
+            // Handle other errors
+            if (!silent) {
+                try {
+                    var errorData = await res.json();
+                    console.log("❌ Error:", errorData.message || "HTTP " + res.status);
+                } catch (e) {
+                    console.log("❌ Error: HTTP " + res.status);
                 }
             }
-        );
-
-        if (res.status === 429) {
-            try {
-                var json = await res.json();
-                var retry = json.retry_after * 1000;
-                console.log("⏳ Rate limited — retrying in " + retry + "ms");
-                await new Promise(function(r) { setTimeout(r, retry); });
-                continue;
-            } catch (e) {
-                console.log("⏳ Rate limited — retrying in 5s");
-                await new Promise(function(r) { setTimeout(r, 5000); });
-                continue;
+            return { success: false, name: channelName, error: res.status };
+        } catch (e) {
+            if (!silent) console.log("❌ Network error:", e.message);
+            retryCount++;
+            if (retryCount < maxRetries) {
+                await new Promise(function(r) { setTimeout(r, 1000); });
             }
         }
-
-        if (res.status === 204 || res.status === 200) {
-            console.log("🗑️  Deleted:", channelName);
-            return true;
-        }
-
-        // Handle other errors - safely parse JSON
-        try {
-            var errorData = await res.json();
-            console.log("❌ Error deleting " + channelName + ":", errorData.message || "Unknown error");
-        } catch (e) {
-            console.log("❌ Error deleting " + channelName + ": HTTP " + res.status);
-        }
-        return false;
     }
+    
+    return { success: false, name: channelName, error: "Max retries exceeded" };
+}
+
+// Process channels in batches for extreme speed
+async function processBatch(token, channels, batchNum, totalBatches, silent) {
+    if (!silent) {
+        console.log("🚀 Batch " + batchNum + "/" + totalBatches + " - Deleting " + channels.length + " channels...");
+    }
+    
+    var promises = channels.map(function(channel) {
+        return deleteChannelFast(token, channel.id, channel.name, silent);
+    });
+    
+    return await Promise.all(promises);
 }
 
 async function main() {
     console.log("\n🔥 ULTRA-FAST DISCORD CHANNEL DELETER 🔥\n");
-    console.log("⚡ Eye blink speed | Maximum performance\n");
+    console.log("⚡ Eye blink speed | 100 channels in seconds!\n");
     console.log("⚠️  WARNING: This will delete channels permanently!\n");
 
     var BOT_TOKEN = await ask("Enter bot token: ");
@@ -122,10 +155,20 @@ async function main() {
     }
 
     console.log("📊 Found " + channels.length + " channels in the server.");
-    console.log("\nChannels to delete:");
-    channels.forEach(function(ch, idx) {
-        console.log("  " + (idx + 1) + ". " + ch.name + " (ID: " + ch.id + ")");
-    });
+    
+    // Only show first 10 if more than 20 channels
+    if (channels.length <= 20) {
+        console.log("\nChannels to delete:");
+        channels.forEach(function(ch, idx) {
+            console.log("  " + (idx + 1) + ". " + ch.name + " (ID: " + ch.id + ")");
+        });
+    } else {
+        console.log("\nShowing first 10 channels:");
+        for (var i = 0; i < Math.min(10, channels.length); i++) {
+            console.log("  " + (i + 1) + ". " + channels[i].name + " (ID: " + channels[i].id + ")");
+        }
+        console.log("  ... and " + (channels.length - 10) + " more channels");
+    }
 
     var confirm = await ask("\n⚠️  Delete ALL " + channels.length + " channels? (yes/no): ");
 
@@ -140,28 +183,48 @@ async function main() {
     // TIMER START
     var start = Date.now();
 
-    console.log("\n⚡ Deleting channels at MAX ultra speed...\n");
-    console.log("⚠️  Note: All channels are deleted concurrently for maximum speed.");
-    console.log("    Discord may rate limit if deleting many channels.\n");
+    console.log("\n⚡ EXTREME SPEED MODE ACTIVATED!\n");
+    console.log("💨 Deleting " + channels.length + " channels with batched concurrent processing...\n");
 
-    var tasks = [];
-    channels.forEach(function(channel) {
-        tasks.push(deleteChannelFast(BOT_TOKEN, channel.id, channel.name));
-    });
+    // Split into batches for optimal performance
+    var allResults = [];
+    var batches = [];
+    
+    for (var i = 0; i < channels.length; i += BATCH_SIZE) {
+        var batchChannels = channels.slice(i, Math.min(i + BATCH_SIZE, channels.length));
+        batches.push(batchChannels);
+    }
 
-    // Delete all channels concurrently for maximum speed
-    // Rate limits are handled automatically with retry logic
-    var results = await Promise.all(tasks);
+    var totalBatches = batches.length;
+    var silent = channels.length > 20; // Silent mode for large operations
+
+    // Process batches with minimal delay between them
+    for (var b = 0; b < batches.length; b++) {
+        var batchResults = await processBatch(BOT_TOKEN, batches[b], b + 1, totalBatches, silent);
+        allResults = allResults.concat(batchResults);
+        
+        // Tiny delay between batches (only if not last batch)
+        if (b < batches.length - 1) {
+            await new Promise(function(r) { setTimeout(r, BATCH_DELAY); });
+        }
+    }
 
     // TIMER END
     var end = Date.now();
     var seconds = ((end - start) / 1000).toFixed(3);
-    var successful = results.filter(function(r) { return r; }).length;
+    var successful = allResults.filter(function(r) { return r.success; }).length;
 
-    console.log("\n🔥 Finished! Ultra-fast deletion completed!");
+    console.log("\n🔥 EXTREME SPEED COMPLETED!");
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     console.log("⏱️  Time taken: " + seconds + " seconds");
     console.log("✅ Successfully deleted: " + successful + "/" + channels.length + " channels");
-    console.log("🚀 Average: " + ((end - start) / channels.length).toFixed(0) + "ms per channel\n");
+    console.log("🚀 Average: " + ((end - start) / channels.length).toFixed(0) + "ms per channel");
+    console.log("💨 Speed: " + (channels.length / (end - start) * 1000).toFixed(1) + " channels/second");
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+
+    if (successful < channels.length) {
+        console.log("⚠️  Some channels failed to delete. Check bot permissions.\n");
+    }
 
     process.exit(0);
 }
