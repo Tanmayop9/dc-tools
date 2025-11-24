@@ -60,9 +60,11 @@ try {
 }
 
 setTimeout(function() {
-    console.log("\n🎉 All tests passed! The channel creator is ready to use.\n");
-    console.log("📝 To run the channel creator:");
-    console.log("   npm start");
-    console.log("   or");
-    console.log("   node channel-creator.js\n");
+    console.log("\n🎉 All tests passed! The channel tools are ready to use.\n");
+    console.log("📝 To run the tools:");
+    console.log("   npm start        - Create channels");
+    console.log("   npm run delete   - Delete channels");
+    console.log("\n   or directly:");
+    console.log("   node channel-creator.js");
+    console.log("   node channel-deleter.js\n");
 }, 100);

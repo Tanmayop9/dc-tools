@@ -6,6 +6,8 @@
   "type": "commonjs",
   "scripts": {
     "start": "node channel-creator.js",
+    "create": "node channel-creator.js",
+    "delete": "node channel-deleter.js",
     "test": "node test.js"
   },
   "keywords": [

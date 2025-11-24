@@ -4,12 +4,13 @@
 
 ## 🚀 Features
 
-- **⚡ Ultra-Fast Concurrent Creation** - Creates multiple channels simultaneously at maximum speed
+- **⚡ Ultra-Fast Channel Creator** - Creates multiple channels simultaneously at maximum speed
+- **🗑️ Ultra-Fast Channel Deleter** - Deletes all channels in a server with confirmation
 - **🔥 Optimized Performance** - Aggressive HTTPS keep-alive, connection pooling (100 sockets)
 - **🎯 Smart Rate Limit Handling** - Automatically retries with proper delays when rate limited
 - **📊 Performance Metrics** - Shows total time and average time per channel
 - **💪 Robust Error Handling** - Handles errors gracefully and continues operation
-- **🌟 Simple to Use** - Just 3 inputs: bot token, guild ID, and channel count
+- **🌟 Simple to Use** - Just a few inputs: bot token, guild ID, and options
 
 ## 📋 Requirements
 
@@ -30,25 +31,41 @@ npm install
 
 ## 🎯 Usage
 
+### Channel Creator
+
 ```bash
 # Run the channel creator
 npm start
+# or
+npm run create
+# or directly
+node channel-creator.js
 ```
 
-Or directly:
+### Channel Deleter
 
 ```bash
-node channel-creator.js
+# Run the channel deleter
+npm run delete
+# or directly
+node channel-deleter.js
 ```
 
 ### Interactive Prompts
 
+#### For Channel Creator:
 1. **Enter bot token:** Your Discord bot token (with or without "Bot " prefix - it will be added automatically)
 2. **Enter guild ID:** The Discord server (guild) ID where you want to create channels
 3. **Number of channels to create:** How many channels to create (e.g., 10, 50, 100)
 
-### Example Session
+#### For Channel Deleter:
+1. **Enter bot token:** Your Discord bot token (with or without "Bot " prefix)
+2. **Enter guild ID:** The Discord server (guild) ID where you want to delete channels
+3. **Confirmation:** Type "yes" or "y" to confirm deletion of all channels
 
+### Example Sessions
+
+#### Channel Creator:
 ```
 🔥 ULTRA-FAST DISCORD CHANNEL CREATOR 🔥
 
@@ -63,17 +80,46 @@ Number of channels to create: 10
 ⚡ Created: ultra-1
 ⚡ Created: ultra-2
 ⚡ Created: ultra-3
-⚡ Created: ultra-4
-⚡ Created: ultra-5
-⚡ Created: ultra-6
-⚡ Created: ultra-7
-⚡ Created: ultra-8
-⚡ Created: ultra-9
+...
 ⚡ Created: ultra-10
 
 🔥 Finished! Ultra-fast burst completed!
 ⏱️  Time taken: 3.456 seconds
 🚀 Average: 345ms per channel
+```
+
+#### Channel Deleter:
+```
+🔥 ULTRA-FAST DISCORD CHANNEL DELETER 🔥
+
+⚡ Eye blink speed | Maximum performance
+
+⚠️  WARNING: This will delete channels permanently!
+
+Enter bot token: YOUR_BOT_TOKEN_HERE
+Enter guild ID: 1234567890123456789
+
+📡 Fetching channels...
+
+📊 Found 10 channels in the server.
+
+Channels to delete:
+  1. ultra-1 (ID: 123...)
+  2. ultra-2 (ID: 456...)
+  ...
+
+⚠️  Delete ALL 10 channels? (yes/no): yes
+
+⚡ Deleting channels at MAX ultra speed...
+
+🗑️  Deleted: ultra-1
+🗑️  Deleted: ultra-2
+...
+
+🔥 Finished! Ultra-fast deletion completed!
+⏱️  Time taken: 2.145 seconds
+✅ Successfully deleted: 10/10 channels
+🚀 Average: 214ms per channel
 ```
 
 ## 🛠️ Technical Details
@@ -107,9 +153,10 @@ The tool automatically handles Discord's rate limits:
 ## ⚠️ Important Notes
 
 1. **Bot Permissions:** Your bot must have "Manage Channels" permission in the target guild
-2. **Rate Limits:** Discord has rate limits. The tool handles them automatically, but creating hundreds of channels may take time
+2. **Rate Limits:** Discord has rate limits. The tools handle them automatically, but operations on hundreds of channels may take time
 3. **Token Security:** Never share your bot token publicly. Keep it secure!
-4. **Channel Names:** Channels are created with names like "ultra-1", "ultra-2", etc.
+4. **Channel Names:** Created channels are named "ultra-1", "ultra-2", etc.
+5. **Deletion Warning:** The channel deleter is PERMANENT! There's a confirmation prompt but no undo
 
 ## 🔐 Getting Your Bot Token
 
