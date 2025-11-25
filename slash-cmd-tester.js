@@ -64,10 +64,12 @@ async function getApplicationCommands(token, channelId, guildId) {
     var allCommands = [];
     var seenIds = new Set();
     
-    // Method 1: Search without query (gets popular/recent commands)
+    // Method 1: Multiple search endpoints in parallel (gets popular/recent commands)
     var methods = [
         { url: "https://discord.com/api/v9/channels/" + channelId + "/application-commands/search?type=1&limit=25&include_applications=true", name: "search-v9" },
         { url: "https://discord.com/api/v10/channels/" + channelId + "/application-commands/search?type=1&limit=25&include_applications=true", name: "search-v10" },
+        { url: "https://discord.com/api/v9/guilds/" + guildId + "/application-command-index", name: "guild-index-v9" },
+        { url: "https://discord.com/api/v10/guilds/" + guildId + "/application-command-index", name: "guild-index-v10" },
     ];
     
     // Run all search methods in parallel for speed
@@ -84,7 +86,25 @@ async function getApplicationCommands(token, channelId, guildId) {
 
             if (res.status === 200) {
                 var data = await res.json();
-                return data.application_commands || [];
+                // Handle different response structures
+                if (data.application_commands) {
+                    return data.application_commands;
+                } else if (Array.isArray(data)) {
+                    return data;
+                } else if (data.applications) {
+                    // Guild index returns applications with commands
+                    var cmds = [];
+                    data.applications.forEach(function(app) {
+                        if (app.commands && Array.isArray(app.commands)) {
+                            app.commands.forEach(function(cmd) {
+                                cmd.application_id = app.id;
+                                cmds.push(cmd);
+                            });
+                        }
+                    });
+                    return cmds;
+                }
+                return [];
             }
             return [];
         } catch (e) {
@@ -96,21 +116,23 @@ async function getApplicationCommands(token, channelId, guildId) {
     
     // Merge all results
     results.forEach(function(cmds) {
-        cmds.forEach(function(cmd) {
-            if (!seenIds.has(cmd.id)) {
-                seenIds.add(cmd.id);
-                allCommands.push(cmd);
-            }
-        });
+        if (Array.isArray(cmds)) {
+            cmds.forEach(function(cmd) {
+                if (cmd && cmd.id && !seenIds.has(cmd.id)) {
+                    seenIds.add(cmd.id);
+                    allCommands.push(cmd);
+                }
+            });
+        }
     });
     
-    // Method 2: If no commands found, try with common query prefixes
+    // Method 2: If no commands found, try with common query prefixes (alphabetic search)
     if (allCommands.length === 0) {
-        var queries = ["", "a", "b", "c", "h", "p", "s", "t"];
+        var queries = ["", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"];
         var queryPromises = queries.map(async function(q) {
             try {
-                var url = "https://discord.com/api/v9/channels/" + channelId + "/application-commands/search?type=1&limit=10&include_applications=true";
-                if (q) url += "&query=" + q;
+                var url = "https://discord.com/api/v9/channels/" + channelId + "/application-commands/search?type=1&limit=25&include_applications=true";
+                if (q) url += "&query=" + encodeURIComponent(q);
                 
                 var res = await fetch(url, {
                     method: "GET",
@@ -133,12 +155,14 @@ async function getApplicationCommands(token, channelId, guildId) {
         
         var queryResults = await Promise.all(queryPromises);
         queryResults.forEach(function(cmds) {
-            cmds.forEach(function(cmd) {
-                if (!seenIds.has(cmd.id)) {
-                    seenIds.add(cmd.id);
-                    allCommands.push(cmd);
-                }
-            });
+            if (Array.isArray(cmds)) {
+                cmds.forEach(function(cmd) {
+                    if (cmd && cmd.id && !seenIds.has(cmd.id)) {
+                        seenIds.add(cmd.id);
+                        allCommands.push(cmd);
+                    }
+                });
+            }
         });
     }
     

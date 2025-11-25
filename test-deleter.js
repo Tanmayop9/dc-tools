@@ -12,18 +12,21 @@ try {
     process.exit(1);
 }
 
-// Test 2: Check if HTTPS agent can be created
+// Test 2: Check if HTTPS agent can be created with ULTRA FAST config
 try {
     var agent = new https.Agent({
         keepAlive: true,
-        maxSockets: 100,
-        maxFreeSockets: 100,
-        keepAliveMsecs: 30000,
-        timeout: 60000
+        maxSockets: 500,              // ULTRA FAST: 500 sockets
+        maxFreeSockets: 500,
+        keepAliveMsecs: 120000,       // 2 minute keep-alive
+        timeout: 15000,
+        scheduling: "lifo"
     });
-    console.log("✅ HTTPS agent created successfully");
+    console.log("✅ ULTRA FAST HTTPS agent created successfully");
     console.log("   - Keep-alive: enabled");
-    console.log("   - Max sockets: 100");
+    console.log("   - Max sockets: 500 (ULTRA FAST)");
+    console.log("   - Keep-alive timeout: 120s");
+    console.log("   - LIFO scheduling: enabled");
 } catch (e) {
     console.log("❌ Failed to create HTTPS agent:", e.message);
     process.exit(1);
@@ -69,10 +72,15 @@ try {
 }
 
 setTimeout(function() {
-    console.log("\n🎉 All tests passed! The channel deleter is ready to use.\n");
+    console.log("\n🎉 All tests passed! The ULTRA FAST channel deleter is ready to use.\n");
     console.log("📝 To run the channel deleter:");
     console.log("   npm run delete");
     console.log("   or");
     console.log("   node channel-deleter.js\n");
+    console.log("⚡ ULTRA FAST Features:");
+    console.log("   - 500 concurrent sockets");
+    console.log("   - 100 channels per batch");
+    console.log("   - 10ms batch delay");
+    console.log("   - 2 minute keep-alive\n");
     console.log("⚠️  WARNING: The deleter permanently removes ALL channels!");
 }, 100);
