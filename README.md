@@ -6,6 +6,7 @@
 
 - **⚡ EXTREME SPEED Channel Creator** - Create 100 channels in eye blink! Batched concurrent processing
 - **🗑️ EXTREME SPEED Channel Deleter** - Delete 100 channels in seconds! Batched concurrent processing
+- **🔥 SLASH COMMAND TESTER** - Send 100 slash commands in eye blink! Test your bot's anti-rate-limit system
 - **🔥 Maximum Performance** - 200-socket connection pool, LIFO scheduling, 50-channel batches
 - **🎯 Smart Rate Limit Handling** - Automatically retries with optimized delays
 - **📊 Performance Metrics** - Shows time, average, channels/second, success rate
@@ -52,6 +53,15 @@ npm run delete
 node channel-deleter.js
 ```
 
+### Slash Command Tester
+
+```bash
+# Run the slash command tester
+npm run slash
+# or directly
+node slash-cmd-tester.js
+```
+
 ### Interactive Prompts
 
 #### For Channel Creator:
@@ -63,6 +73,14 @@ node channel-deleter.js
 1. **Enter bot token:** Your Discord bot token (with or without "Bot " prefix)
 2. **Enter guild ID:** The Discord server (guild) ID where you want to delete channels
 3. **Confirmation:** Type "yes" or "y" to confirm deletion of all channels
+
+#### For Slash Command Tester:
+1. **Enter USER token:** Your Discord USER token (not bot token - required to send slash commands)
+2. **Enter guild ID:** The Discord server where your bot is accessible
+3. **Enter channel ID:** The channel ID where your bot's slash commands are available
+4. **Select command:** Choose which slash command to spam
+5. **Enter command count:** How many times to send the command (e.g., 100)
+6. **Confirmation:** Type "yes" or "y" to start the test
 
 ### Example Sessions
 
@@ -132,12 +150,64 @@ Showing first 10 channels:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
+#### Slash Command Tester:
+```
+🔥 ULTRA-FAST SLASH COMMAND TESTER 🔥
+
+⚡ Eye blink speed | 100 commands in seconds!
+🧪 Test your bot's anti-rate-limit system!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Enter your USER token (not bot token): YOUR_USER_TOKEN_HERE
+Enter guild ID: 1234567890123456789
+Enter channel ID (where bot is accessible): 1234567890123456789
+
+📡 Searching for available slash commands...
+
+📊 Found 3 slash commands:
+
+  1. /ping - Check bot latency
+     App ID: 987654321...
+  2. /help - Show help menu
+     App ID: 987654321...
+  3. /test - Test command
+     App ID: 987654321...
+
+Enter command number to spam (1-3): 1
+
+✅ Selected: /ping
+
+Number of commands to send (e.g., 100): 100
+
+⚠️  Send /ping 100 times? (yes/no): yes
+
+⚡ EXTREME SPEED MODE ACTIVATED!
+
+💨 Sending 100 slash commands with batched concurrent processing...
+
+🚀 Batch 1/2 - Sending 50 commands...
+🚀 Batch 2/2 - Sending 50 commands...
+
+🔥 EXTREME SPEED COMPLETED!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⏱️  Time taken: 5.678 seconds
+✅ Successfully sent: 100/100 commands
+🚀 Average: 56ms per command
+💨 Speed: 17.6 commands/second
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎉 All commands sent successfully!
+   Your bot received 100 commands at extreme speed.
+```
+
 ## 💨 Speed Benchmarks
 
 **Typical performance for 100 channels:**
 - Creation: ~5-15 seconds (6-20 channels/second)
 - Deletion: ~3-10 seconds (10-33 channels/second)
-- Average per channel: ~100-200ms
+- Slash Commands: ~3-10 seconds (10-33 commands/second)
+- Average per operation: ~100-200ms
 
 *Actual speed depends on Discord's rate limits and network latency*
 
@@ -187,9 +257,10 @@ The tool automatically handles Discord's rate limits:
 
 1. **Bot Permissions:** Your bot must have "Manage Channels" permission in the target guild
 2. **Rate Limits:** Discord has rate limits. The tools handle them automatically, but operations on hundreds of channels may take time
-3. **Token Security:** Never share your bot token publicly. Keep it secure!
+3. **Token Security:** Never share your bot token or user token publicly. Keep them secure!
 4. **Channel Names:** Created channels are named "ultra-1", "ultra-2", etc.
 5. **Deletion Warning:** The channel deleter is PERMANENT! There's a confirmation prompt but no undo
+6. **Slash Command Tester:** Requires a USER token (not bot token) to send slash commands. This is used to test your bot's anti-rate-limit system by sending many slash commands rapidly.
 
 ## 🔐 Getting Your Bot Token
 
