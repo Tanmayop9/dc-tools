@@ -1,204 +1,142 @@
-# Quick Start Guide - 5 Minutes to Your First Account
+# ⚡ Quick Start Guide
 
-The fastest way to create Discord accounts on Termux!
+Get started with EXTREME SPEED Discord Channel Tools in 3 simple steps!
 
-## 🚀 Super Quick Start (Termux)
+**100 channels in eye blink! 💨**
+
+## 🚀 Installation
 
 ```bash
-# 1. Install dependencies
-pkg install python git termux-api
-
-# 2. Clone repo
+# 1. Clone the repository
 git clone https://github.com/Tanmayop9/dc-tools.git
 cd dc-tools
 
-# 3. Install Python packages
-pip install requests
+# 2. Install dependencies
+npm install
 
-# 4. Run it!
-python discord_creator_free.py
+# 3. Run the tools
+npm start        # Create channels
+npm run delete   # Delete channels
 ```
 
-That's it! 🎉
+## 📝 What You'll Need
 
-## 📱 What Happens
+Before running the tool, make sure you have:
 
-1. **Script starts** - Shows cool banner
-2. **Enter number of accounts** - Type 1 and press Enter
-3. **Script generates credentials** - Automatic
-4. **Gets temp email** - Automatic
-5. **Registers account** - Automatic
-6. **CAPTCHA appears** - Browser opens automatically
-7. **You solve CAPTCHA** - Takes 10-30 seconds
-8. **Click Submit** - In browser
-9. **Email verification** - Automatic
-10. **Done!** - Token saved to `tokens.txt`
+1. **Bot Token** - From [Discord Developer Portal](https://discord.com/developers/applications)
+   - Go to your application → Bot section → Copy token
+   - Can be entered with or without "Bot " prefix
 
-## 🎯 First Run Example
+2. **Guild ID** - The Discord server where you want to create channels
+   - Enable Developer Mode: User Settings → Advanced → Developer Mode
+   - Right-click your server → Copy ID
 
-```bash
-$ python discord_creator_free.py
+3. **Permissions** - Your bot needs "Manage Channels" permission in the server
 
-╔══════════════════════════════════════════════════════════════════╗
-║      Discord Account Creator - 100% FREE VERSION                ║
-║      No Paid Services | Works on Termux | Manual CAPTCHA        ║
-╚══════════════════════════════════════════════════════════════════╝
+## ⚡ Usage Examples
 
-How many accounts to create? (default: 1): 1
-
-[*] Will create 1 account(s)
-[*] You may need to solve CAPTCHA for each account
-[*] Browser will open automatically when CAPTCHA is required
-
-Press ENTER to start...
-```
-
-Press ENTER and watch the magic happen!
-
-## ✅ What You Get
-
-After successful creation, you'll have:
-
-1. **tokens.txt** - Contains your Discord token
-   ```
-   MTIzNDU2Nzg5MDEyMzQ1Njc4OTAuGHiJ8K.dQw4w9WgXcQ...
-   ```
-
-2. **accounts.txt** - Contains full account details
-   ```
-   ============================================================
-   Created: 2025-11-20 13:20:00
-   Email: user123@1secmail.com
-   Username: cooluser1234
-   Password: aB3$xY9#mN2@pQ5!
-   Token: MTIzNDU2Nzg5MDEyMzQ1Njc4OTAuGHiJ8K.dQw4w9WgXcQ...
-   Verified: Yes
-   ============================================================
-   ```
-
-## 🔧 If Browser Doesn't Open
-
-Don't worry! Script shows you the URL:
+### Creating Channels
 
 ```
-[*] If browser doesn't open automatically, open this URL manually:
-    http://localhost:8888/
+$ npm start
+
+🔥 ULTRA-FAST DISCORD CHANNEL CREATOR 🔥
+
+⚡ Eye blink speed | 100 channels in seconds!
+
+Enter bot token: YOUR_BOT_TOKEN_HERE
+Enter guild ID: 1234567890123456789
+Number of channels to create: 100
+
+⚡ EXTREME SPEED MODE ACTIVATED!
+
+💨 Creating 100 channels with batched concurrent processing...
+
+🚀 Batch 1/2 - Processing 50 channels...
+🚀 Batch 2/2 - Processing 50 channels...
+
+🔥 EXTREME SPEED COMPLETED!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⏱️  Time taken: 10.567 seconds
+✅ Successfully created: 100/100 channels
+🚀 Average: 105ms per channel
+💨 Speed: 9.5 channels/second
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Just copy and paste that URL into any browser on your phone!
+### Deleting Channels
 
-## 💡 Pro Tips
+```
+$ npm run delete
 
-### Tip 1: Multiple Accounts
-```bash
-$ python discord_creator_free.py
-How many accounts to create? (default: 1): 5
+🔥 ULTRA-FAST DISCORD CHANNEL DELETER 🔥
+
+⚡ Eye blink speed | 100 channels in seconds!
+
+⚠️  WARNING: This will delete channels permanently!
+
+Enter bot token: YOUR_BOT_TOKEN_HERE
+Enter guild ID: 1234567890123456789
+
+📡 Fetching channels...
+
+📊 Found 100 channels in the server.
+
+Showing first 10 channels:
+  1. ultra-1 (ID: 123...)
+  2. ultra-2 (ID: 456...)
+  ...
+  10. ultra-10 (ID: ...)
+  ... and 90 more channels
+
+⚠️  Delete ALL 100 channels? (yes/no): yes
+
+⚡ EXTREME SPEED MODE ACTIVATED!
+
+💨 Deleting 100 channels with batched concurrent processing...
+
+🚀 Batch 1/2 - Deleting 50 channels...
+🚀 Batch 2/2 - Deleting 50 channels...
+
+🔥 EXTREME SPEED COMPLETED!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⏱️  Time taken: 7.891 seconds
+✅ Successfully deleted: 100/100 channels
+🚀 Average: 78ms per channel
+💨 Speed: 12.7 channels/second
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Creates 5 accounts with 30-second delays between them.
+## 💡 Tips
 
-### Tip 2: Keep Screen On
-While solving CAPTCHA, keep your phone screen on. You can:
-- Use split-screen mode (Termux + Browser)
-- Or switch between apps quickly
+- **EXTREME SPEED:** Tools optimized for 100+ channels with batched processing
+- **Rate limits:** Automatically handled with smart retry logic
+- **Batching:** Processes 50 channels per batch for optimal throughput
+- **Silent mode:** Auto-activates for 20+ channels to maximize speed
+- **Channel names:** Created channels are named "ultra-1", "ultra-2", etc.
+- **Be careful with delete:** The deleter is permanent - make sure you want to delete ALL channels!
+- **Performance:** Expect 6-20 channels/second for creation, 10-33 for deletion
 
-### Tip 3: Good Internet
-Use WiFi for best results. Mobile data works too, just slower.
+## 🔧 Troubleshooting
 
-### Tip 4: Save Tokens Safely
-```bash
-# Backup your tokens
-cp tokens.txt tokens_backup.txt
+**"Unauthorized" or "Invalid token"**
+- Check your bot token is correct
+- Make sure the token is not expired
 
-# Or move to phone storage
-termux-setup-storage
-cp tokens.txt ~/storage/shared/
-```
+**"Missing Permissions"**
+- Ensure your bot has "Manage Channels" permission
+- Re-invite the bot with proper permissions if needed
 
-## 🎓 CAPTCHA Solving Guide
+**"Rate limited"**
+- Normal! The tool will automatically retry
+- Consider creating fewer channels at once
 
-When CAPTCHA appears:
+## 📚 More Information
 
-1. **Browser opens** showing CAPTCHA box
-2. **Click checkbox** "I am human"
-3. **Solve puzzle** (if images appear)
-4. **Click Submit** button
-5. **Success page** appears
-6. **Return to Termux** - script continues
+See [README.md](README.md) for detailed documentation and advanced features.
 
-Takes only 10-30 seconds!
+---
 
-## ❓ Troubleshooting
-
-### Problem: "Module not found"
-```bash
-pip install requests
-```
-
-### Problem: "Browser not opening"
-```bash
-# Install Termux:API
-pkg install termux-api
-
-# Also install Termux:API app from F-Droid
-```
-
-### Problem: "Connection refused"
-Open the URL manually in browser: `http://localhost:8888/`
-
-### Problem: "Permission denied"
-```bash
-chmod +x discord_creator_free.py
-```
-
-## 📊 Success Checklist
-
-- [x] Termux installed (from F-Droid)
-- [x] Python installed (`pkg install python`)
-- [x] Git installed (`pkg install git`)
-- [x] Repository cloned
-- [x] Dependencies installed (`pip install requests`)
-- [x] Script runs without errors
-- [x] Browser opens for CAPTCHA
-- [x] CAPTCHA solved successfully
-- [x] Token saved to `tokens.txt`
-
-## 🎉 You're Done!
-
-You now have:
-- ✅ Working Discord account
-- ✅ Token for API access
-- ✅ Full credentials saved
-- ✅ Email verified (usually)
-
-Create more accounts anytime by running:
-```bash
-python discord_creator_free.py
-```
-
-## 📚 Learn More
-
-- **Termux Guide**: [TERMUX_SETUP.md](TERMUX_SETUP.md)
-- **Advanced Features**: [ADVANCED_FEATURES.md](ADVANCED_FEATURES.md)
-- **Full README**: [README.md](README.md)
-
-## 🆘 Need Help?
-
-1. Read [TERMUX_SETUP.md](TERMUX_SETUP.md) for detailed troubleshooting
-2. Check error messages carefully
-3. Make sure all dependencies are installed
-4. Try again - sometimes Discord servers are slow
-
-## ⚡ Advanced Usage
-
-Once comfortable, try:
-
-```bash
-# Use advanced version with all features
-python discord_creator_advanced.py
-
-# Manage your accounts
-python account_manager.py
-```
-
-Happy account creating! 🚀
+**Ready to manage channels at eye blink speed?** 🚀
+- Create: `npm start` or `npm run create`
+- Delete: `npm run delete`
