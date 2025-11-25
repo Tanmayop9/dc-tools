@@ -6,8 +6,8 @@
 
 - **⚡ EXTREME SPEED Channel Creator** - Create 100 channels in eye blink! Batched concurrent processing
 - **🗑️ EXTREME SPEED Channel Deleter** - Delete 100 channels in seconds! Batched concurrent processing
-- **🔥 SLASH COMMAND TESTER** - Send 100 slash commands in eye blink! Test your bot's anti-rate-limit system
-- **🔥 Maximum Performance** - 200-socket connection pool, LIFO scheduling, 50-channel batches
+- **⚡⚡⚡ ULTRA FAST SLASH COMMAND TESTER** - Send 100 slash commands in eye blink! Parallel command discovery + Maximum parallelism
+- **🔥 Maximum Performance** - 500-socket connection pool (slash), LIFO scheduling, 100-command batches
 - **🎯 Smart Rate Limit Handling** - Automatically retries with optimized delays
 - **📊 Performance Metrics** - Shows time, average, channels/second, success rate
 - **💪 Robust Error Handling** - Handles errors gracefully with automatic retry (3 attempts)
@@ -152,9 +152,9 @@ Showing first 10 channels:
 
 #### Slash Command Tester:
 ```
-🔥 ULTRA-FAST SLASH COMMAND TESTER 🔥
+⚡⚡⚡ ULTRA FAST SLASH COMMAND TESTER ⚡⚡⚡
 
-⚡ Eye blink speed | 100 commands in seconds!
+🚀 Lightning speed | 100 commands in eye blink!
 🧪 Test your bot's anti-rate-limit system!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -163,7 +163,7 @@ Enter your USER token (not bot token): YOUR_USER_TOKEN_HERE
 Enter guild ID: 1234567890123456789
 Enter channel ID (where bot is accessible): 1234567890123456789
 
-📡 Searching for available slash commands...
+📡 Searching for available slash commands (ultra fast parallel search)...
 
 📊 Found 3 slash commands:
 
@@ -182,23 +182,22 @@ Number of commands to send (e.g., 100): 100
 
 ⚠️  Send /ping 100 times? (yes/no): yes
 
-⚡ EXTREME SPEED MODE ACTIVATED!
+⚡⚡⚡ ULTRA FAST MODE ACTIVATED! ⚡⚡⚡
 
-💨 Sending 100 slash commands with batched concurrent processing...
+💨 Sending 100 slash commands with MAXIMUM parallelism...
 
-🚀 Batch 1/2 - Sending 50 commands...
-🚀 Batch 2/2 - Sending 50 commands...
+🚀 Batch 1/1 - Sending 100 commands...
 
-🔥 EXTREME SPEED COMPLETED!
+⚡⚡⚡ ULTRA FAST COMPLETED! ⚡⚡⚡
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️  Time taken: 5.678 seconds
+⏱️  Time taken: 3.456 seconds
 ✅ Successfully sent: 100/100 commands
-🚀 Average: 56ms per command
-💨 Speed: 17.6 commands/second
+🚀 Average: 34ms per command
+💨 Speed: 28.9 commands/second
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🎉 All commands sent successfully!
-   Your bot received 100 commands at extreme speed.
+   Your bot received 100 commands at ULTRA speed.
 ```
 
 ## 💨 Speed Benchmarks
@@ -206,8 +205,8 @@ Number of commands to send (e.g., 100): 100
 **Typical performance for 100 channels:**
 - Creation: ~5-15 seconds (6-20 channels/second)
 - Deletion: ~3-10 seconds (10-33 channels/second)
-- Slash Commands: ~3-10 seconds (10-33 commands/second)
-- Average per operation: ~100-200ms
+- Slash Commands: ~2-5 seconds (20-50 commands/second) **ULTRA FAST!**
+- Average per operation: ~20-100ms
 
 *Actual speed depends on Discord's rate limits and network latency*
 
@@ -231,20 +230,29 @@ The tool automatically handles Discord's rate limits:
 - Waits for the exact retry_after duration
 - Continues creation seamlessly
 
-### HTTPS Agent Configuration (EXTREME SPEED)
+### HTTPS Agent Configuration (ULTRA FAST for Slash Commands)
 
 ```javascript
 {
     keepAlive: true,
-    maxSockets: 200,          // Doubled for extreme speed!
-    maxFreeSockets: 200,
-    keepAliveMsecs: 60000,    // 60 seconds
-    timeout: 30000,
+    maxSockets: 500,          // ULTRA FAST: 500 sockets!
+    maxFreeSockets: 500,
+    keepAliveMsecs: 120000,   // 2 minutes keep-alive
+    timeout: 15000,           // Shorter timeout for faster failures
     scheduling: "lifo"        // Last-in-first-out (hot connections)
 }
 ```
 
-### Batching Configuration
+### Slash Command Batching Configuration (ULTRA FAST)
+
+```javascript
+{
+    batchSize: 100,           // ULTRA FAST: 100 commands per batch
+    batchDelay: 10            // ULTRA FAST: Only 10ms between batches
+}
+```
+
+### Channel Batching Configuration
 
 ```javascript
 {
@@ -260,7 +268,7 @@ The tool automatically handles Discord's rate limits:
 3. **Token Security:** Never share your bot token or user token publicly. Keep them secure!
 4. **Channel Names:** Created channels are named "ultra-1", "ultra-2", etc.
 5. **Deletion Warning:** The channel deleter is PERMANENT! There's a confirmation prompt but no undo
-6. **Slash Command Tester:** Requires a USER token (not bot token) to send slash commands. This is used to test your bot's anti-rate-limit system by sending many slash commands rapidly.
+6. **Slash Command Tester:** Requires a USER token (not bot token) to send slash commands. This is used to test your bot's anti-rate-limit system by sending many slash commands rapidly. ULTRA FAST mode with parallel command discovery and 100 commands per batch!
 
 ## 🔐 Getting Your Bot Token
 

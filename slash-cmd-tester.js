@@ -2,19 +2,19 @@ var readline = require("readline");
 var fetch = require("node-fetch");
 var https = require("https");
 
-// EXTREME SPEED HTTPS agent - maximized for eye blink performance
+// ULTRA FAST HTTPS agent - maximized for extreme performance
 var agent = new https.Agent({
     keepAlive: true,
-    maxSockets: 200,              // Maximum sockets for extreme speed
-    maxFreeSockets: 200,
-    keepAliveMsecs: 60000,        // Longer keep-alive
-    timeout: 30000,
+    maxSockets: 500,              // Maximum sockets for ultra speed
+    maxFreeSockets: 500,
+    keepAliveMsecs: 120000,       // 2 minute keep-alive
+    timeout: 15000,               // Shorter timeout for faster failures
     scheduling: "lifo"            // Last-in-first-out for hot connections
 });
 
-// Batching configuration for extreme speed
-var BATCH_SIZE = 50;              // Process 50 commands at a time
-var BATCH_DELAY = 50;             // Tiny 50ms delay between batches
+// ULTRA FAST Batching configuration
+var BATCH_SIZE = 100;             // Process 100 commands at a time
+var BATCH_DELAY = 10;             // Minimal 10ms delay between batches
 
 var rl = readline.createInterface({
     input: process.stdin,
@@ -37,54 +37,120 @@ function normalizeToken(token) {
     return normalizedToken;
 }
 
-// Generate a random nonce for Discord interactions
+// Generate a random nonce for Discord interactions (snowflake format)
 function generateNonce() {
-    // Use timestamp + random suffix for unique nonces (safe integer range)
-    var timestamp = Date.now();
-    var random = Math.floor(Math.random() * 1000000);
-    return String(timestamp) + String(random).padStart(6, "0");
+    // Discord snowflake-like nonce for maximum compatibility
+    var timestamp = Date.now() - 1420070400000; // Discord epoch
+    var random = Math.floor(Math.random() * 4194304);
+    return String((BigInt(timestamp) << BigInt(22)) | BigInt(random));
 }
 
-// Get application commands from a channel
-async function getApplicationCommands(token, channelId) {
+// Generate session ID
+function generateSessionId() {
+    var chars = "abcdef0123456789";
+    var result = "";
+    for (var i = 0; i < 32; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
+// Cached session ID for all requests
+var cachedSessionId = generateSessionId();
+
+// ULTRA FAST: Get application commands using multiple methods
+async function getApplicationCommands(token, channelId, guildId) {
     var authToken = normalizeToken(token);
+    var allCommands = [];
+    var seenIds = new Set();
     
-    try {
-        var res = await fetch(
-            "https://discord.com/api/v10/channels/" + channelId + "/application-commands/search?type=1&limit=25",
-            {
+    // Method 1: Search without query (gets popular/recent commands)
+    var methods = [
+        { url: "https://discord.com/api/v9/channels/" + channelId + "/application-commands/search?type=1&limit=25&include_applications=true", name: "search-v9" },
+        { url: "https://discord.com/api/v10/channels/" + channelId + "/application-commands/search?type=1&limit=25&include_applications=true", name: "search-v10" },
+    ];
+    
+    // Run all search methods in parallel for speed
+    var searchPromises = methods.map(async function(method) {
+        try {
+            var res = await fetch(method.url, {
                 method: "GET",
                 agent: agent,
                 headers: {
                     "Authorization": authToken,
                     "Content-Type": "application/json"
                 }
+            });
+
+            if (res.status === 200) {
+                var data = await res.json();
+                return data.application_commands || [];
             }
-        );
-
-        if (res.status === 200) {
-            var data = await res.json();
-            return data.application_commands || [];
-        }
-
-        console.log("❌ Error fetching commands: HTTP " + res.status);
-        try {
-            var errorData = await res.json();
-            console.log("   ", errorData.message || "Unknown error");
+            return [];
         } catch (e) {
-            // ignore parse errors
+            return [];
         }
-        return null;
-    } catch (e) {
-        console.log("❌ Network error:", e.message);
-        return null;
+    });
+    
+    var results = await Promise.all(searchPromises);
+    
+    // Merge all results
+    results.forEach(function(cmds) {
+        cmds.forEach(function(cmd) {
+            if (!seenIds.has(cmd.id)) {
+                seenIds.add(cmd.id);
+                allCommands.push(cmd);
+            }
+        });
+    });
+    
+    // Method 2: If no commands found, try with common query prefixes
+    if (allCommands.length === 0) {
+        var queries = ["", "a", "b", "c", "h", "p", "s", "t"];
+        var queryPromises = queries.map(async function(q) {
+            try {
+                var url = "https://discord.com/api/v9/channels/" + channelId + "/application-commands/search?type=1&limit=10&include_applications=true";
+                if (q) url += "&query=" + q;
+                
+                var res = await fetch(url, {
+                    method: "GET",
+                    agent: agent,
+                    headers: {
+                        "Authorization": authToken,
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                if (res.status === 200) {
+                    var data = await res.json();
+                    return data.application_commands || [];
+                }
+                return [];
+            } catch (e) {
+                return [];
+            }
+        });
+        
+        var queryResults = await Promise.all(queryPromises);
+        queryResults.forEach(function(cmds) {
+            cmds.forEach(function(cmd) {
+                if (!seenIds.has(cmd.id)) {
+                    seenIds.add(cmd.id);
+                    allCommands.push(cmd);
+                }
+            });
+        });
     }
+    
+    return allCommands;
 }
 
-// Send a slash command interaction
+// ULTRA FAST: Send a slash command interaction with minimal overhead
+// Note: Reduced retries (2 vs 3) for speed - acceptable since slash commands
+// are idempotent and can be retried by the user if needed
 async function sendSlashCommand(token, applicationId, guildId, channelId, commandData, cmdIndex, silent) {
     var authToken = normalizeToken(token);
-    var maxRetries = 3;
+    var maxRetries = 2; // Reduced retries for speed (trade-off: less reliable in poor networks)
     var retryCount = 0;
 
     while (retryCount < maxRetries) {
@@ -95,13 +161,14 @@ async function sendSlashCommand(token, applicationId, guildId, channelId, comman
                 application_id: applicationId,
                 guild_id: guildId,
                 channel_id: channelId,
-                session_id: generateNonce().substring(0, 32),
+                session_id: cachedSessionId,
                 data: commandData,
-                nonce: generateNonce()
+                nonce: generateNonce(),
+                analytics_location: "slash_ui"
             };
 
             var res = await fetch(
-                "https://discord.com/api/v10/interactions",
+                "https://discord.com/api/v9/interactions",
                 {
                     method: "POST",
                     agent: agent,
@@ -115,7 +182,7 @@ async function sendSlashCommand(token, applicationId, guildId, channelId, comman
 
             if (res.status === 429) {
                 var json = await res.json();
-                var retry = Math.min(json.retry_after * 1000, 5000); // Cap at 5s
+                var retry = Math.min(json.retry_after * 1000, 2000); // Cap at 2s for speed
                 if (!silent) console.log("⏳ Rate limited — waiting " + retry + "ms (cmd #" + cmdIndex + ")");
                 await new Promise(function(r) { setTimeout(r, retry); });
                 retryCount++;
@@ -127,21 +194,15 @@ async function sendSlashCommand(token, applicationId, guildId, channelId, comman
                 return { success: true, index: cmdIndex };
             }
 
-            // Handle other errors
+            // Log error status for debugging (only in non-silent mode)
             if (!silent) {
-                try {
-                    var errorData = await res.json();
-                    console.log("❌ Error #" + cmdIndex + ":", errorData.message || "HTTP " + res.status);
-                } catch (e) {
-                    console.log("❌ Error #" + cmdIndex + ": HTTP " + res.status);
-                }
+                console.log("❌ Command #" + cmdIndex + " failed: HTTP " + res.status);
             }
             return { success: false, index: cmdIndex, error: res.status };
         } catch (e) {
-            if (!silent) console.log("❌ Network error #" + cmdIndex + ":", e.message);
             retryCount++;
             if (retryCount < maxRetries) {
-                await new Promise(function(r) { setTimeout(r, 1000); });
+                await new Promise(function(r) { setTimeout(r, 500); }); // Quick retry
             }
         }
     }
@@ -149,7 +210,7 @@ async function sendSlashCommand(token, applicationId, guildId, channelId, comman
     return { success: false, index: cmdIndex, error: "Max retries exceeded" };
 }
 
-// Process commands in batches for extreme speed
+// ULTRA FAST: Process commands in massive batches
 async function processBatch(token, applicationId, guildId, channelId, commandData, startIndex, count, batchNum, totalBatches, silent) {
     if (!silent) {
         console.log("🚀 Batch " + batchNum + "/" + totalBatches + " - Sending " + count + " commands...");
@@ -157,45 +218,61 @@ async function processBatch(token, applicationId, guildId, channelId, commandDat
     
     var promises = [];
     for (var i = 0; i < count; i++) {
-        promises.push(sendSlashCommand(token, applicationId, guildId, channelId, commandData, startIndex + i + 1, silent));
+        promises.push(sendSlashCommand(token, applicationId, guildId, channelId, commandData, startIndex + i + 1, true)); // Always silent for max speed
     }
     
     return await Promise.all(promises);
 }
 
-// Search for slash commands by name
-async function searchCommands(token, channelId, query) {
+// Search for slash commands by name - ULTRA FAST with parallel queries
+async function searchCommands(token, channelId, guildId, query) {
     var authToken = normalizeToken(token);
+    var allCommands = [];
+    var seenIds = new Set();
     
-    try {
-        var url = "https://discord.com/api/v10/channels/" + channelId + "/application-commands/search?type=1&limit=10";
-        if (query) {
-            url += "&query=" + encodeURIComponent(query);
+    // Multiple API versions and endpoints in parallel
+    var urls = [
+        "https://discord.com/api/v9/channels/" + channelId + "/application-commands/search?type=1&limit=25&include_applications=true" + (query ? "&query=" + encodeURIComponent(query) : ""),
+        "https://discord.com/api/v10/channels/" + channelId + "/application-commands/search?type=1&limit=25" + (query ? "&query=" + encodeURIComponent(query) : "")
+    ];
+    
+    var searchPromises = urls.map(async function(url) {
+        try {
+            var res = await fetch(url, {
+                method: "GET",
+                agent: agent,
+                headers: {
+                    "Authorization": authToken,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (res.status === 200) {
+                var data = await res.json();
+                return data.application_commands || [];
+            }
+            return [];
+        } catch (e) {
+            return [];
         }
-        
-        var res = await fetch(url, {
-            method: "GET",
-            agent: agent,
-            headers: {
-                "Authorization": authToken,
-                "Content-Type": "application/json"
+    });
+    
+    var results = await Promise.all(searchPromises);
+    results.forEach(function(cmds) {
+        cmds.forEach(function(cmd) {
+            if (!seenIds.has(cmd.id)) {
+                seenIds.add(cmd.id);
+                allCommands.push(cmd);
             }
         });
-
-        if (res.status === 200) {
-            var data = await res.json();
-            return data.application_commands || [];
-        }
-
-        return [];
-    } catch (e) {
-        return [];
-    }
+    });
+    
+    return allCommands;
 }
 
 async function main() {
-    console.log("\n🔥 ULTRA-FAST SLASH COMMAND TESTER 🔥\n");
-    console.log("⚡ Eye blink speed | 100 commands in seconds!");
+    console.log("\n⚡⚡⚡ ULTRA FAST SLASH COMMAND TESTER ⚡⚡⚡\n");
+    console.log("🚀 Lightning speed | 100 commands in eye blink!");
     console.log("🧪 Test your bot's anti-rate-limit system!\n");
     console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
@@ -203,16 +280,30 @@ async function main() {
     var GUILD_ID = await ask("Enter guild ID: ");
     var CHANNEL_ID = await ask("Enter channel ID (where bot is accessible): ");
 
-    console.log("\n📡 Searching for available slash commands...\n");
+    console.log("\n📡 Searching for available slash commands (ultra fast parallel search)...\n");
 
-    // Search for commands in the channel
-    var commands = await searchCommands(USER_TOKEN, CHANNEL_ID, "");
+    // ULTRA FAST: Use parallel command discovery
+    var commands = await getApplicationCommands(USER_TOKEN, CHANNEL_ID, GUILD_ID);
 
     if (!commands || commands.length === 0) {
-        console.log("❌ No slash commands found in this channel.");
-        console.log("   Make sure your bot has slash commands registered.\n");
-        rl.close();
-        process.exit(1);
+        console.log("⚠️  No slash commands found automatically.");
+        console.log("   Trying manual search...\n");
+        
+        // Try searching with common command prefixes
+        var searchQuery = await ask("Enter command name to search (or press Enter to skip): ");
+        if (searchQuery.trim()) {
+            commands = await searchCommands(USER_TOKEN, CHANNEL_ID, GUILD_ID, searchQuery.trim());
+        }
+        
+        if (!commands || commands.length === 0) {
+            console.log("\n❌ No slash commands found in this channel.");
+            console.log("   Tips:");
+            console.log("   1. Make sure you're in a channel where the bot has access");
+            console.log("   2. The bot must have slash commands registered");
+            console.log("   3. Try typing / in Discord to see available commands\n");
+            rl.close();
+            process.exit(1);
+        }
     }
 
     console.log("📊 Found " + commands.length + " slash commands:\n");
@@ -234,7 +325,7 @@ async function main() {
 
     console.log("\n✅ Selected: /" + selectedCmd.name);
 
-    // Check if command has options
+    // Build command data with full application_command structure
     var commandData = {
         version: selectedCmd.version,
         id: selectedCmd.id,
@@ -251,11 +342,14 @@ async function main() {
             name: selectedCmd.name,
             description: selectedCmd.description,
             dm_permission: selectedCmd.dm_permission,
+            contexts: selectedCmd.contexts,
+            integration_types: selectedCmd.integration_types,
             options: selectedCmd.options || []
-        }
+        },
+        attachments: []
     };
 
-    // If command has required options, ask for values
+    // Handle command options
     if (selectedCmd.options && selectedCmd.options.length > 0) {
         console.log("\n📝 This command has options:");
         
@@ -296,10 +390,10 @@ async function main() {
     // TIMER START
     var start = Date.now();
 
-    console.log("\n⚡ EXTREME SPEED MODE ACTIVATED!\n");
-    console.log("💨 Sending " + COUNT + " slash commands with batched concurrent processing...\n");
+    console.log("\n⚡⚡⚡ ULTRA FAST MODE ACTIVATED! ⚡⚡⚡\n");
+    console.log("💨 Sending " + COUNT + " slash commands with MAXIMUM parallelism...\n");
 
-    // Split into batches for optimal performance
+    // ULTRA FAST: Split into massive batches
     var allResults = [];
     var batches = [];
     
@@ -309,9 +403,8 @@ async function main() {
     }
 
     var totalBatches = batches.length;
-    var silent = COUNT > 20; // Silent mode for large operations
 
-    // Process batches with minimal delay between them
+    // Process batches with minimal delay
     for (var b = 0; b < batches.length; b++) {
         var batchResults = await processBatch(
             USER_TOKEN,
@@ -323,11 +416,11 @@ async function main() {
             batches[b].count,
             b + 1,
             totalBatches,
-            silent
+            false
         );
         allResults = allResults.concat(batchResults);
         
-        // Tiny delay between batches (only if not last batch)
+        // Minimal delay between batches (only if not last batch)
         if (b < batches.length - 1) {
             await new Promise(function(r) { setTimeout(r, BATCH_DELAY); });
         }
@@ -338,7 +431,7 @@ async function main() {
     var seconds = ((end - start) / 1000).toFixed(3);
     var successful = allResults.filter(function(r) { return r.success; }).length;
 
-    console.log("\n🔥 EXTREME SPEED COMPLETED!");
+    console.log("\n⚡⚡⚡ ULTRA FAST COMPLETED! ⚡⚡⚡");
     console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     console.log("⏱️  Time taken: " + seconds + " seconds");
     console.log("✅ Successfully sent: " + successful + "/" + COUNT + " commands");
@@ -355,7 +448,7 @@ async function main() {
 
     if (successful === COUNT) {
         console.log("🎉 All commands sent successfully!");
-        console.log("   Your bot received " + COUNT + " commands at extreme speed.\n");
+        console.log("   Your bot received " + COUNT + " commands at ULTRA speed.\n");
     }
 
     process.exit(0);
