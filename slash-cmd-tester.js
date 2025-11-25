@@ -146,9 +146,11 @@ async function getApplicationCommands(token, channelId, guildId) {
 }
 
 // ULTRA FAST: Send a slash command interaction with minimal overhead
+// Note: Reduced retries (2 vs 3) for speed - acceptable since slash commands
+// are idempotent and can be retried by the user if needed
 async function sendSlashCommand(token, applicationId, guildId, channelId, commandData, cmdIndex, silent) {
     var authToken = normalizeToken(token);
-    var maxRetries = 2; // Reduced retries for speed
+    var maxRetries = 2; // Reduced retries for speed (trade-off: less reliable in poor networks)
     var retryCount = 0;
 
     while (retryCount < maxRetries) {
@@ -192,7 +194,10 @@ async function sendSlashCommand(token, applicationId, guildId, channelId, comman
                 return { success: true, index: cmdIndex };
             }
 
-            // Handle other errors silently and return quickly
+            // Log error status for debugging (only in non-silent mode)
+            if (!silent) {
+                console.log("❌ Command #" + cmdIndex + " failed: HTTP " + res.status);
+            }
             return { success: false, index: cmdIndex, error: res.status };
         } catch (e) {
             retryCount++;
