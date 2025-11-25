@@ -8,6 +8,7 @@
     "start": "node channel-creator.js",
     "create": "node channel-creator.js",
     "delete": "node channel-deleter.js",
+    "slash": "node slash-cmd-tester.js",
     "test": "node test.js"
   },
   "keywords": [
