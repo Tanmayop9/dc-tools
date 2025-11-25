@@ -39,7 +39,10 @@ function normalizeToken(token) {
 
 // Generate a random nonce for Discord interactions
 function generateNonce() {
-    return String(Math.floor(Math.random() * 9000000000000000000) + 1000000000000000000);
+    // Use timestamp + random suffix for unique nonces (safe integer range)
+    var timestamp = Date.now();
+    var random = Math.floor(Math.random() * 1000000);
+    return String(timestamp) + String(random).padStart(6, "0");
 }
 
 // Get application commands from a channel

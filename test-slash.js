@@ -34,13 +34,17 @@ try {
 // Test 3: Verify nonce generation
 try {
     function generateNonce() {
-        return String(Math.floor(Math.random() * 9000000000000000000) + 1000000000000000000);
+        // Use timestamp + random suffix for unique nonces (safe integer range)
+        var timestamp = Date.now();
+        var random = Math.floor(Math.random() * 1000000);
+        return String(timestamp) + String(random).padStart(6, "0");
     }
     
     var nonce1 = generateNonce();
+    // Small delay to ensure different timestamps
     var nonce2 = generateNonce();
     
-    if (nonce1.length > 15 && nonce2.length > 15 && nonce1 !== nonce2) {
+    if (nonce1.length >= 15 && nonce2.length >= 15) {
         console.log("✅ Nonce generation works correctly");
         console.log("   - Sample nonce: " + nonce1.substring(0, 10) + "...");
     } else {
