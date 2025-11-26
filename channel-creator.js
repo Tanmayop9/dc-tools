@@ -2,19 +2,19 @@ var readline = require("readline");
 var fetch = require("node-fetch");
 var https = require("https");
 
-// EXTREME SPEED HTTPS agent - maximized for eye blink performance
+// ULTRA FAST HTTPS agent - maximized for extreme performance
 var agent = new https.Agent({
     keepAlive: true,
-    maxSockets: 200,              // Double the sockets
-    maxFreeSockets: 200,
-    keepAliveMsecs: 60000,        // Longer keep-alive
-    timeout: 30000,
+    maxSockets: 500,              // Maximum sockets for ultra speed
+    maxFreeSockets: 500,
+    keepAliveMsecs: 120000,       // 2 minute keep-alive
+    timeout: 15000,               // Shorter timeout for faster failures
     scheduling: "lifo"            // Last-in-first-out for hot connections
 });
 
-// Batching configuration for extreme speed
-var BATCH_SIZE = 50;              // Process 50 channels at a time
-var BATCH_DELAY = 50;             // Tiny 50ms delay between batches
+// ULTRA FAST Batching configuration
+var BATCH_SIZE = 100;             // Process 100 channels at a time
+var BATCH_DELAY = 10;             // Minimal 10ms delay between batches
 
 var rl = readline.createInterface({
     input: process.stdin,
@@ -43,7 +43,7 @@ function normalizeToken(token) {
 
 async function createChannelFast(token, guild, name, silent) {
     var authToken = normalizeToken(token);
-    var maxRetries = 3;
+    var maxRetries = 2; // Reduced retries for speed
     var retryCount = 0;
 
     while (retryCount < maxRetries) {
@@ -66,7 +66,7 @@ async function createChannelFast(token, guild, name, silent) {
 
             if (res.status === 429) {
                 var json = await res.json();
-                var retry = Math.min(json.retry_after * 1000, 5000); // Cap at 5s
+                var retry = Math.min(json.retry_after * 1000, 2000); // Cap at 2s for ultra speed
                 if (!silent) console.log("⏳ Rate limited — waiting " + retry + "ms");
                 await new Promise(function(r) { setTimeout(r, retry); });
                 retryCount++;
@@ -93,7 +93,7 @@ async function createChannelFast(token, guild, name, silent) {
             if (!silent) console.log("❌ Network error:", e.message);
             retryCount++;
             if (retryCount < maxRetries) {
-                await new Promise(function(r) { setTimeout(r, 1000); });
+                await new Promise(function(r) { setTimeout(r, 500); }); // Quick retry
             }
         }
     }
@@ -115,8 +115,10 @@ async function processBatch(token, guild, names, batchNum, totalBatches, silent)
 }
 
 async function main() {
-    console.log("\n🔥 ULTRA-FAST DISCORD CHANNEL CREATOR 🔥\n");
-    console.log("⚡ Eye blink speed | 100 channels in seconds!\n");
+    console.log("\n⚡⚡⚡ ULTRA FAST DISCORD CHANNEL CREATOR ⚡⚡⚡\n");
+    console.log("🚀 Lightning speed | 500 channels in eye blink!");
+    console.log("💨 100 channels per batch | Maximum parallelism!\n");
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
     var BOT_TOKEN = await ask("Enter bot token: ");
     var GUILD_ID = await ask("Enter guild ID: ");
@@ -127,8 +129,8 @@ async function main() {
     // TIMER START
     var start = Date.now();
 
-    console.log("\n⚡ EXTREME SPEED MODE ACTIVATED!\n");
-    console.log("💨 Creating " + COUNT + " channels with batched concurrent processing...\n");
+    console.log("\n⚡⚡⚡ ULTRA FAST MODE ACTIVATED! ⚡⚡⚡\n");
+    console.log("💨 Creating " + COUNT + " channels with MAXIMUM parallelism...\n");
 
     // Split into batches for optimal performance
     var allResults = [];
@@ -143,14 +145,14 @@ async function main() {
     }
 
     var totalBatches = batches.length;
-    var silent = COUNT > 20; // Silent mode for large operations
+    var silent = COUNT > 10; // Silent mode for operations > 10
 
     // Process batches with minimal delay between them
     for (var b = 0; b < batches.length; b++) {
         var batchResults = await processBatch(BOT_TOKEN, GUILD_ID, batches[b], b + 1, totalBatches, silent);
         allResults = allResults.concat(batchResults);
         
-        // Tiny delay between batches (only if not last batch)
+        // Minimal delay between batches (only if not last batch)
         if (b < batches.length - 1) {
             await new Promise(function(r) { setTimeout(r, BATCH_DELAY); });
         }
@@ -161,7 +163,7 @@ async function main() {
     var seconds = ((end - start) / 1000).toFixed(3);
     var successful = allResults.filter(function(r) { return r.success; }).length;
 
-    console.log("\n🔥 EXTREME SPEED COMPLETED!");
+    console.log("\n⚡⚡⚡ ULTRA FAST COMPLETED! ⚡⚡⚡");
     console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     console.log("⏱️  Time taken: " + seconds + " seconds");
     console.log("✅ Successfully created: " + successful + "/" + COUNT + " channels");
@@ -171,6 +173,10 @@ async function main() {
 
     if (successful < COUNT) {
         console.log("⚠️  Some channels failed to create. Check bot permissions.\n");
+    }
+
+    if (successful === COUNT) {
+        console.log("🎉 All channels created successfully!\n");
     }
 
     process.exit(0);
