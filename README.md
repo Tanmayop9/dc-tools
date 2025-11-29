@@ -7,6 +7,7 @@
 - **⚡ EXTREME SPEED Channel Creator** - Create 100 channels in eye blink! Batched concurrent processing
 - **🗑️ EXTREME SPEED Channel Deleter** - Delete 100 channels in seconds! Batched concurrent processing
 - **⚡⚡⚡ ULTRA FAST SLASH COMMAND TESTER** - Send 100 slash commands in eye blink! Parallel command discovery + Maximum parallelism
+- **🤖 BOT ADDER** - Add Discord bots to servers using API calls! Generate OAuth2 invite links with custom permissions
 - **🔥 Maximum Performance** - 500-socket connection pool (slash), LIFO scheduling, 100-command batches
 - **🎯 Smart Rate Limit Handling** - Automatically retries with optimized delays
 - **📊 Performance Metrics** - Shows time, average, channels/second, success rate
@@ -62,6 +63,15 @@ npm run slash
 node slash-cmd-tester.js
 ```
 
+### Bot Adder
+
+```bash
+# Run the bot adder
+npm run bot
+# or directly
+node bot-adder.js
+```
+
 ### Interactive Prompts
 
 #### For Channel Creator:
@@ -81,6 +91,16 @@ node slash-cmd-tester.js
 4. **Select command:** Choose which slash command to spam
 5. **Enter command count:** How many times to send the command (e.g., 100)
 6. **Confirmation:** Type "yes" or "y" to start the test
+
+#### For Bot Adder:
+1. **Enter bot token:** Your Discord bot token (with or without "Bot " prefix)
+2. **Choose action:** Select from the menu (1-4):
+   - Generate OAuth2 invite link for a specific guild
+   - Check if bot is in a specific guild
+   - List all guilds bot is in
+   - Generate general OAuth2 invite link
+3. **Enter guild ID:** (if applicable) The target Discord server ID
+4. **Choose permissions:** Select permission preset or enter custom permission integer
 
 ### Example Sessions
 
@@ -198,6 +218,71 @@ Number of commands to send (e.g., 100): 100
 
 🎉 All commands sent successfully!
    Your bot received 100 commands at ULTRA speed.
+```
+
+#### Bot Adder:
+```
+🤖 DISCORD BOT ADDER - API Integration Tool 🤖
+
+📡 Add bots to servers using Discord API!
+🔐 For educational purposes only
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Enter bot token: YOUR_BOT_TOKEN_HERE
+
+📡 Fetching bot information...
+
+✅ Bot Info:
+   Username: MyBot#0001
+   ID: 123456789012345678
+   Bot: Yes
+
+📡 Fetching bot's current guilds...
+
+📊 Bot is currently in 3 guild(s):
+   1. Test Server (ID: 111222333444555666)
+   2. Dev Server (ID: 222333444555666777)
+   3. Production (ID: 333444555666777888)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 Available Actions:
+   1. Generate OAuth2 invite link for a specific guild
+   2. Check if bot is in a specific guild
+   3. List all guilds bot is in
+   4. Generate general OAuth2 invite link
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Choose action (1-4): 1
+
+Enter target guild ID: 987654321098765432
+
+📋 Permission Presets:
+   1. Administrator (full access) - 8
+   2. Moderator (manage msgs/roles) - 268454912
+   3. Basic (read/send messages) - 3072
+   4. Custom (enter permission integer)
+
+Choose permissions (1-4): 1
+
+📋 Application ID: 123456789012345678
+📋 Application Name: MyBot
+
+🔗 OAuth2 Authorization URL:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+https://discord.com/api/oauth2/authorize?client_id=123456789...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 Instructions:
+   1. Open the OAuth2 URL above in your browser
+   2. Login with an account that has 'Manage Server' permission
+   3. Select the target server and authorize
+   4. The bot will be added to the server!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔐 For educational purposes only!
+   Respect Discord ToS and server rules.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ## 💨 Speed Benchmarks

@@ -9,6 +9,7 @@
     "create": "node channel-creator.js",
     "delete": "node channel-deleter.js",
     "slash": "node slash-cmd-tester.js",
+    "bot": "node bot-adder.js",
     "test": "node test.js"
   },
   "keywords": [
