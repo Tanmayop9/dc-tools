@@ -12,19 +12,19 @@ try {
     process.exit(1);
 }
 
-// Test 2: Check if HTTPS agent can be created
+// Test 2: Check if HTTPS agent can be created with consistent config
 try {
     var agent = new https.Agent({
         keepAlive: true,
-        maxSockets: 100,
-        maxFreeSockets: 50,
-        keepAliveMsecs: 60000,
+        maxSockets: 500,              // Consistent with other tools
+        maxFreeSockets: 500,
+        keepAliveMsecs: 120000,       // 2 minute keep-alive
         timeout: 15000,
         scheduling: "lifo"
     });
     console.log("✅ HTTPS agent created successfully");
     console.log("   - Keep-alive: enabled");
-    console.log("   - Max sockets: 100");
+    console.log("   - Max sockets: 500 (consistent with other tools)");
     console.log("   - LIFO scheduling: enabled");
 } catch (e) {
     console.log("❌ Failed to create HTTPS agent:", e.message);

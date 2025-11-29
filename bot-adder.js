@@ -2,14 +2,14 @@ var readline = require("readline");
 var fetch = require("node-fetch");
 var https = require("https");
 
-// HTTPS agent for API calls
+// HTTPS agent for API calls - consistent with existing tools
 var agent = new https.Agent({
     keepAlive: true,
-    maxSockets: 100,
-    maxFreeSockets: 50,
-    keepAliveMsecs: 60000,
-    timeout: 15000,
-    scheduling: "lifo"
+    maxSockets: 500,              // Maximum sockets for ultra speed (consistent with other tools)
+    maxFreeSockets: 500,
+    keepAliveMsecs: 120000,       // 2 minute keep-alive
+    timeout: 15000,               // Shorter timeout for faster failures
+    scheduling: "lifo"            // Last-in-first-out for hot connections
 });
 
 var rl = readline.createInterface({
@@ -23,12 +23,44 @@ function ask(q) {
     });
 }
 
+// Permission flags for Discord bots
+var PERMISSIONS = {
+    ADMINISTRATOR: 8,
+    MANAGE_CHANNELS: 16,
+    MANAGE_GUILD: 32,
+    MANAGE_MESSAGES: 8192,
+    SEND_MESSAGES: 2048,
+    READ_MESSAGES: 1024,
+    MANAGE_ROLES: 268435456,
+    KICK_MEMBERS: 2,
+    BAN_MEMBERS: 4,
+    VIEW_AUDIT_LOG: 128
+};
+
+// Permission presets for common use cases
+var PERMISSION_PRESETS = {
+    ADMINISTRATOR: PERMISSIONS.ADMINISTRATOR,  // Full access (8)
+    MODERATOR: 268454912,                       // Manage messages + roles
+    BASIC: 3072                                 // Read + send messages
+};
+
+// Pre-normalize token once for all requests
+var normalizedToken = null;
+
+function normalizeToken(token) {
+    if (!normalizedToken) {
+        var authToken = token.trim();
+        if (!authToken.startsWith("Bot ")) {
+            authToken = "Bot " + authToken;
+        }
+        normalizedToken = authToken;
+    }
+    return normalizedToken;
+}
+
 // Get bot information
 async function getBotInfo(token) {
-    var authToken = token.trim();
-    if (!authToken.startsWith("Bot ")) {
-        authToken = "Bot " + authToken;
-    }
+    var authToken = normalizeToken(token);
 
     try {
         var res = await fetch(
@@ -62,10 +94,7 @@ async function getBotInfo(token) {
 
 // Get application info
 async function getApplicationInfo(token) {
-    var authToken = token.trim();
-    if (!authToken.startsWith("Bot ")) {
-        authToken = "Bot " + authToken;
-    }
+    var authToken = normalizeToken(token);
 
     try {
         var res = await fetch(
@@ -100,11 +129,6 @@ async function getApplicationInfo(token) {
 // Add bot to guild using OAuth2 authorization
 // Note: This requires the guild owner or admin to have authorized the bot
 async function addBotToGuild(token, guildId, permissions) {
-    var authToken = token.trim();
-    if (!authToken.startsWith("Bot ")) {
-        authToken = "Bot " + authToken;
-    }
-
     try {
         // First get the application info to get the client ID
         var appInfo = await getApplicationInfo(token);
@@ -118,7 +142,7 @@ async function addBotToGuild(token, guildId, permissions) {
         console.log("📋 Application Name: " + appInfo.name);
 
         // Generate the OAuth2 authorization URL
-        var permInt = parseInt(permissions) || 8; // Default to Administrator (8)
+        var permInt = parseInt(permissions) || PERMISSIONS.ADMINISTRATOR;
         var oauthUrl = "https://discord.com/api/oauth2/authorize?" +
             "client_id=" + clientId +
             "&scope=bot%20applications.commands" +
@@ -146,10 +170,7 @@ async function addBotToGuild(token, guildId, permissions) {
 
 // Check if bot is in a guild
 async function checkBotInGuild(token, guildId) {
-    var authToken = token.trim();
-    if (!authToken.startsWith("Bot ")) {
-        authToken = "Bot " + authToken;
-    }
+    var authToken = normalizeToken(token);
 
     try {
         var res = await fetch(
@@ -180,10 +201,7 @@ async function checkBotInGuild(token, guildId) {
 
 // Get all guilds the bot is in
 async function getBotGuilds(token) {
-    var authToken = token.trim();
-    if (!authToken.startsWith("Bot ")) {
-        authToken = "Bot " + authToken;
-    }
+    var authToken = normalizeToken(token);
 
     try {
         var res = await fetch(
@@ -214,20 +232,6 @@ async function getBotGuilds(token) {
         return null;
     }
 }
-
-// Permission flags for Discord bots
-var PERMISSIONS = {
-    ADMINISTRATOR: 8,
-    MANAGE_CHANNELS: 16,
-    MANAGE_GUILD: 32,
-    MANAGE_MESSAGES: 8192,
-    SEND_MESSAGES: 2048,
-    READ_MESSAGES: 1024,
-    MANAGE_ROLES: 268435456,
-    KICK_MEMBERS: 2,
-    BAN_MEMBERS: 4,
-    VIEW_AUDIT_LOG: 128
-};
 
 async function main() {
     console.log("\n🤖 DISCORD BOT ADDER - API Integration Tool 🤖\n");
@@ -283,27 +287,27 @@ async function main() {
             var guildId = await ask("\nEnter target guild ID: ");
             
             console.log("\n📋 Permission Presets:");
-            console.log("   1. Administrator (full access) - 8");
-            console.log("   2. Moderator (manage msgs/roles) - 268454912");
-            console.log("   3. Basic (read/send messages) - 3072");
+            console.log("   1. Administrator (full access) - " + PERMISSION_PRESETS.ADMINISTRATOR);
+            console.log("   2. Moderator (manage msgs/roles) - " + PERMISSION_PRESETS.MODERATOR);
+            console.log("   3. Basic (read/send messages) - " + PERMISSION_PRESETS.BASIC);
             console.log("   4. Custom (enter permission integer)\n");
             
             var permChoice = await ask("Choose permissions (1-4): ");
-            var permissions = 8; // Default Administrator
+            var permissions = PERMISSION_PRESETS.ADMINISTRATOR;
             
             switch (permChoice.trim()) {
                 case "1":
-                    permissions = 8;
+                    permissions = PERMISSION_PRESETS.ADMINISTRATOR;
                     break;
                 case "2":
-                    permissions = 268454912;
+                    permissions = PERMISSION_PRESETS.MODERATOR;
                     break;
                 case "3":
-                    permissions = 3072;
+                    permissions = PERMISSION_PRESETS.BASIC;
                     break;
                 case "4":
                     var customPerm = await ask("Enter permission integer: ");
-                    permissions = parseInt(customPerm) || 8;
+                    permissions = parseInt(customPerm) || PERMISSION_PRESETS.ADMINISTRATOR;
                     break;
             }
             
@@ -349,27 +353,27 @@ async function main() {
 
         case "4":
             console.log("\n📋 Permission Presets:");
-            console.log("   1. Administrator (full access) - 8");
-            console.log("   2. Moderator (manage msgs/roles) - 268454912");
-            console.log("   3. Basic (read/send messages) - 3072");
+            console.log("   1. Administrator (full access) - " + PERMISSION_PRESETS.ADMINISTRATOR);
+            console.log("   2. Moderator (manage msgs/roles) - " + PERMISSION_PRESETS.MODERATOR);
+            console.log("   3. Basic (read/send messages) - " + PERMISSION_PRESETS.BASIC);
             console.log("   4. Custom (enter permission integer)\n");
             
             var generalPermChoice = await ask("Choose permissions (1-4): ");
-            var generalPermissions = 8; // Default Administrator
+            var generalPermissions = PERMISSION_PRESETS.ADMINISTRATOR;
             
             switch (generalPermChoice.trim()) {
                 case "1":
-                    generalPermissions = 8;
+                    generalPermissions = PERMISSION_PRESETS.ADMINISTRATOR;
                     break;
                 case "2":
-                    generalPermissions = 268454912;
+                    generalPermissions = PERMISSION_PRESETS.MODERATOR;
                     break;
                 case "3":
-                    generalPermissions = 3072;
+                    generalPermissions = PERMISSION_PRESETS.BASIC;
                     break;
                 case "4":
                     var customGeneralPerm = await ask("Enter permission integer: ");
-                    generalPermissions = parseInt(customGeneralPerm) || 8;
+                    generalPermissions = parseInt(customGeneralPerm) || PERMISSION_PRESETS.ADMINISTRATOR;
                     break;
             }
             
